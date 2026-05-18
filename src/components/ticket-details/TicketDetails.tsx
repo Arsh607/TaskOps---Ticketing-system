@@ -88,4 +88,4 @@ function TicketDetails() {
   );
 }
 
-export default TicketDetails;
+export default TicketDetails
