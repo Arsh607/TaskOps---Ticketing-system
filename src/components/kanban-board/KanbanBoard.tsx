@@ -27,7 +27,7 @@ export default function KanbanBoard() {
         },
         {
           id: 102,
-          title: "Plan dashboard stucture and components",
+          title: "Plan dashboard structure and components",
           priority: "Low",
         },
       ],
@@ -56,7 +56,7 @@ export default function KanbanBoard() {
       tasks: [
         {
           id: 301,
-          title: "Review styleguide and readme documentation",
+          title: "Review style guide and README documentation",
           priority: "High",
         },
       ],
@@ -79,9 +79,7 @@ export default function KanbanBoard() {
     <section className="kanban-board" aria-labelledby="kanban-board-title">
       <header className="kanban-board__header">
         <h2 id="kanban-board-title">Kanban Board</h2>
-        <p>
-          Organize your project tickets by workflow stage and priority.
-        </p>
+        <p>Organize your project tickets by workflow stage and priority.</p>
       </header>
 
       <ul className="kanban-board__columns" aria-label="Kanban workflow columns">
@@ -93,7 +91,10 @@ export default function KanbanBoard() {
                 <p>{column.description}</p>
               </header>
 
-              <ul className="kanban-board__tasks" aria-label={`${column.title} tasks`}>
+              <ul
+                className="kanban-board__tasks"
+                aria-label={`${column.title} tasks`}
+              >
                 {column.tasks.map((task) => (
                   <li className="kanban-board__task" key={task.id}>
                     <h4>{task.title}</h4>
