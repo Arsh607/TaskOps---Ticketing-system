@@ -1,20 +1,22 @@
 .ticket-details {
-  width: min(100%, 980px);
+  width: 100%;
+  max-width: 900px;
   margin: 0 auto;
   padding: 2rem;
-  background-color: #241a35;
-  border: 1px solid #33244d;
+  background-color: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 1rem;
-  color: #f5f3ff;
+  color: var(--text);
+  box-shadow: 0 1px 10px rgba(0, 0, 0, 0.15);
 }
 
 .ticket-details__header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
 }
 
 .ticket-details__header h2 {
   margin: 0.25rem 0 0.5rem;
-  font-size: 2rem;
+  font-size: 1.9rem;
 }
 
 .ticket-details__header p {
@@ -31,8 +33,8 @@
 .ticket-details__card {
   margin-top: 1rem;
   padding: 1.25rem;
-  background-color: #141218;
-  border: 1px solid #33244d;
+  background-color: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 0.75rem;
 }
 
