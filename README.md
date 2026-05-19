@@ -1,75 +1,124 @@
-# React + TypeScript + Vite
+# TaskOps
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Team Information
 
-Currently, two official plugins are available:
+### Team Name
+TaskOps Developers
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+### Team Members
+- Arshdeep Singh
+- Muse Muse
+- Krupa Patel
 
-## React Compiler
+---
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+# Project Description
 
-Note: This will impact Vite dev & build performances.
+TaskOps is a modern ticket management and workflow organization platform designed to help teams manage support requests, assignments, and project-related tasks efficiently.
 
-## Expanding the ESLint configuration
+The application provides users with a centralized dashboard for viewing notifications and general updates, a ticket management system for tracking assigned work, detailed ticket pages for managing issue information, and an integrated Kanban board for organizing tasks visually.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+The project focuses on improving collaboration, task visibility, and workflow management for technical and support teams.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+# Core Features
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- User authentication and login system
+- User dashboard with notifications and personalized information
+- Ticket management system
+- Detailed ticket pages
+- Built-in Kanban task board
+- Task organization and assignment
+- Team-based workflow support
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+# High-Level User Stories
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- As a user, I want to view all tickets assigned to me so that I can track my current workload efficiently.
+
+- As a user, I want to open a ticket and view its full details so that I can understand the issue and update its progress.
+
+- As a user, I want to organize tasks using a Kanban board so that I can manage work visually and improve productivity.
+
+- As a user, I want to receive notifications and updates on my dashboard so that I can stay informed about important activity.
+
+- As a team member, I want to manage and update tickets collaboratively so that support and development workflows remain organized.
+
+---
+
+# Planned Pages
+
+## Login Page
+Displays:
+- user login form
+- authentication validation
+- secure access to the application
+
+## Dashboard
+Displays:
+- notifications
+- recent activity
+- assigned ticket summary
+- general user information
+
+## Tickets Page
+Displays:
+- all assigned tickets
+- ticket status
+- priority information
+- filtering and searching options
+
+## Ticket Details Page
+Displays:
+- ticket title and description
+- comments and updates
+- assignment information
+- status and progress tracking
+
+## Kanban Board
+Displays:
+- draggable task columns
+- task organization by workflow stage
+- task progress visualization
+
+---
+
+# Technology Stack
+
+## Frontend
+- React
+- TypeScript
+- Vite
+
+## Version Control
+- Git
+- GitHub
+
+## Deployment
+- Vercel
+
+---
+
+# Development Workflow
+
+- `main` branch is used for production-ready code
+- `develop` branch is used for active development
+- Feature branches are created for individual tasks and merged through pull requests
+
+---
+
+---
+
+# Sprint 1
+
+- Github project, Vercel and Kanban setup: Muse and Arshdeep
+- `STYLEGUIDE.md`: Muse
+- `README.md`: Arshdeep
+- kanban-board component: Muse
+- ticket-details component: Arshdeep
+- ticket-list component: Krupa
+- App.tsx integration: Krupa
+
+---
