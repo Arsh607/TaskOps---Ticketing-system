@@ -1,4 +1,6 @@
 import TicketDetails from './components/ticket-details/TicketDetails'
+import KanbanBoard from './components/kanban-board/KanbanBoard'
+import TicketList from './components/ticket-list/TicketList'
 import './App.css'
 
 function App() {
@@ -9,6 +11,8 @@ function App() {
       </header>
 
       <main>
+        <KanbanBoard />
+        <TicketList />
         <TicketDetails />
       </main>
 
