@@ -1,6 +1,8 @@
 import Dashboard from '../components/dashboard/Dashboard'
+import SharedViewCounter from '../components/shared-view-counter/SharedViewCounter'
+import type { SharedCounterProps } from '../types/SharedCounterProps'
 
-function HomePage() {
+function HomePage({ viewCount, incrementViewCount }: SharedCounterProps) {
   return (
     <section>
       <h2>Welcome to TaskOps</h2>
@@ -11,6 +13,11 @@ function HomePage() {
 
       <h2>Dashboard</h2>
       <Dashboard />
+
+      <SharedViewCounter
+        viewCount={viewCount}
+        incrementViewCount={incrementViewCount}
+      />
     </section>
   )
 }
