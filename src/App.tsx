@@ -1,29 +1,21 @@
-import TicketDetails from './components/ticket-details/TicketDetails'
-import KanbanBoard from './components/kanban-board/KanbanBoard'
-import TicketList from './components/ticket-list/TicketList'
-import Dashboard from './components/dashboard/Dashboard'
+import { Routes, Route } from 'react-router-dom'
 import './App.css'
+import Layout from './components/Layout'
+import HomePage from './pages/HomePage'
+import KanbanPage from './pages/KanbanPage'
+import TicketsPage from './pages/TicketsPage'
+import DetailsPage from './pages/DetailsPage'
 
 function App() {
   return (
-    <>
-      <header className="app-header">
-        <h1>TaskOps Ticketing System</h1>
-      </header>
-
-      <main>
-        <Dashboard />
-        <KanbanBoard />
-        <TicketList />
-        <TicketDetails />
-      </main>
-
-      <footer className="app-footer">
-        <p>
-          Team Members: Krupa Patel, Arshdeep Singh, Muse Muse
-        </p>
-      </footer>
-    </>
+    <Routes>
+      <Route path="/" element={<Layout />}>
+        <Route index element={<HomePage />} />
+        <Route path="kanban" element={<KanbanPage />} />
+        <Route path="tickets" element={<TicketsPage />} />
+        <Route path="details" element={<DetailsPage />} />
+      </Route>
+    </Routes>
   )
 }
 
