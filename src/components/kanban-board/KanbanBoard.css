@@ -27,6 +27,69 @@
   line-height: 1.5;
 }
 
+.kanban-board__form {
+  display: grid;
+  grid-template-columns: minmax(12rem, 1fr) minmax(8rem, 0.45fr) minmax(8rem, 0.45fr) auto;
+  gap: 0.85rem;
+  align-items: end;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.75rem;
+}
+
+.kanban-board__form label {
+  display: grid;
+  gap: 0.4rem;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.kanban-board__form input,
+.kanban-board__form select {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  color: var(--text);
+  background-color: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 0.5rem;
+  font: inherit;
+}
+
+.kanban-board__form input:focus,
+.kanban-board__form select:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.kanban-board__form button,
+.kanban-board__task-heading button {
+  min-height: 2.5rem;
+  padding: 0.6rem 0.85rem;
+  color: #ffffff;
+  background-color: #2563eb;
+  border: 0;
+  border-radius: 0.5rem;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kanban-board__form button:hover,
+.kanban-board__task-heading button:hover {
+  background-color: #1d4ed8;
+}
+
+.kanban-board__form-error {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #fca5a5;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
 .kanban-board__columns {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -79,9 +142,28 @@
   border-radius: 0.5rem;
 }
 
+.kanban-board__task-heading {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
 .kanban-board__task h4 {
-  margin: 0 0 0.5rem;
+  margin: 0;
   font-size: 1rem;
+}
+
+.kanban-board__task-heading button {
+  min-height: auto;
+  padding: 0.35rem 0.55rem;
+  background-color: #475569;
+  font-size: 0.8rem;
+}
+
+.kanban-board__task-heading button:hover {
+  background-color: #334155;
 }
 
 .kanban-board__task p {
@@ -107,12 +189,24 @@
 }
 
 @media (max-width: 900px) {
+  .kanban-board__form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .kanban-board__columns {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 600px) {
+  .kanban-board {
+    padding: 1rem;
+  }
+
+  .kanban-board__form {
+    grid-template-columns: 1fr;
+  }
+
   .kanban-board__columns {
     grid-template-columns: 1fr;
   }
