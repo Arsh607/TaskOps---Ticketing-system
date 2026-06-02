@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import './TicketList.css'
 
 type Ticket = {
@@ -9,30 +8,12 @@ type Ticket = {
   owner: string
 }
 
-function TicketList() {
-  const [tickets] = useState<Ticket[]>([
-    {
-      id: 1,
-      title: 'User cannot access dashboard',
-      status: 'Open',
-      priority: 'High',
-      owner: 'Aashish',
-    },
-    {
-      id: 2,
-      title: 'Email notification not sending',
-      status: 'In Progress',
-      priority: 'Medium',
-      owner: 'Team Ops',
-    },
-    {
-      id: 3,
-      title: 'Add search filter to ticket list',
-      status: 'Planned',
-      priority: 'Low',
-      owner: 'Dev Squad',
-    },
-  ])
+interface TicketListProps {
+  tickets: Ticket[]
+  onRemoveTicket?: (ticketId: number) => void
+}
+
+function TicketList({ tickets, onRemoveTicket }: TicketListProps) {
 
   return (
     <section className="ticket-list" aria-labelledby="ticket-list-heading">
@@ -41,29 +22,47 @@ function TicketList() {
         <p>Review the latest tickets for the support workflow and triage priorities.</p>
       </div>
 
-      <ul className="ticket-list__items">
-        {tickets.map((ticket) => (
-          <li key={ticket.id} className="ticket-list__item">
-            <article className="ticket-card">
-              <h3>{ticket.title}</h3>
-              <dl>
-                <div>
-                  <dt>Status</dt>
-                  <dd>{ticket.status}</dd>
+      {tickets.length === 0 ? (
+        <div className="ticket-list__empty">
+          <p>No tickets found. Create one to get started!</p>
+        </div>
+      ) : (
+        <ul className="ticket-list__items">
+          {tickets.map((ticket) => (
+            <li key={ticket.id} className="ticket-list__item">
+              <article className="ticket-card">
+                <div className="ticket-card__header">
+                  <h3>{ticket.title}</h3>
+                  {onRemoveTicket && (
+                    <button
+                      onClick={() => onRemoveTicket(ticket.id)}
+                      className="ticket-card__remove-btn"
+                      aria-label={`Remove ticket: ${ticket.title}`}
+                      title="Remove this ticket"
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
-                <div>
-                  <dt>Priority</dt>
-                  <dd>{ticket.priority}</dd>
-                </div>
-                <div>
-                  <dt>Owner</dt>
-                  <dd>{ticket.owner}</dd>
-                </div>
-              </dl>
-            </article>
-          </li>
-        ))}
-      </ul>
+                <dl>
+                  <div>
+                    <dt>Status</dt>
+                    <dd>{ticket.status}</dd>
+                  </div>
+                  <div>
+                    <dt>Priority</dt>
+                    <dd>{ticket.priority}</dd>
+                  </div>
+                  <div>
+                    <dt>Owner</dt>
+                    <dd>{ticket.owner}</dd>
+                  </div>
+                </dl>
+              </article>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   )
 }
