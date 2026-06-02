@@ -109,4 +109,16 @@ Displays:
 
 ---
 
+---
 
+# Sprint 1
+
+- Github project, Vercel and Kanban setup: Muse and Arshdeep
+- `STYLEGUIDE.md`: Muse
+- `README.md`: Arshdeep
+- kanban-board component: Muse
+- ticket-details component: Arshdeep
+- ticket-list component: Krupa
+- App.tsx integration: Krupa
+
+---
