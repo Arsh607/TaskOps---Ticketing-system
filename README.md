@@ -122,3 +122,16 @@ Displays:
 - App.tsx integration: Krupa
 
 ---
+
+---
+
+# Sprint 2
+
+- Multi-page Navigation: Krupa
+- Naivgation Interfaces: Kurpa and Arshdeep
+- Shared state across pages: Muse
+- kanban-board feature page and form component: Muse
+- ticket-list feature page and form component: Krupa
+- ticket-details feature page and form component: Arshdeep
+
+---
