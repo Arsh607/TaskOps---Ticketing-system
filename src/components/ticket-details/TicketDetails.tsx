@@ -1,4 +1,10 @@
+import { useState } from "react";
 import "./TicketDetails.css";
+
+interface TicketUpdate {
+  id: number;
+  message: string;
+}
 
 function TicketDetails() {
   const ticket = {
@@ -14,12 +20,46 @@ function TicketDetails() {
       "The user is unable to access the dashboard after logging into the application. The page loads briefly and then displays a blank screen.",
     impact:
       "This issue prevents the user from viewing assigned tickets, notifications, and task updates.",
-    comments: [
-      "User confirmed the issue happens after login.",
-      "Support team checked browser console and found a possible authentication error.",
-      "Issue assigned to Application Support for further investigation.",
-    ],
   };
+
+  const [newUpdate, setNewUpdate] = useState("");
+  const [updates, setUpdates] = useState<TicketUpdate[]>([
+    {
+      id: 1,
+      message: "User confirmed the issue happens after login.",
+    },
+    {
+      id: 2,
+      message:
+        "Support team checked browser console and found a possible authentication error.",
+    },
+    {
+      id: 3,
+      message:
+        "Issue assigned to Application Support for further investigation.",
+    },
+  ]);
+
+  function handleAddUpdate(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (newUpdate.trim() === "") {
+      return;
+    }
+
+    const updateToAdd: TicketUpdate = {
+      id: Date.now(),
+      message: newUpdate,
+    };
+
+    setUpdates([...updates, updateToAdd]);
+    setNewUpdate("");
+  }
+
+  function handleRemoveUpdate(updateId: number) {
+    const filteredUpdates = updates.filter((update) => update.id !== updateId);
+    setUpdates(filteredUpdates);
+  }
 
   return (
     <section className="ticket-details">
@@ -76,16 +116,46 @@ function TicketDetails() {
       </article>
 
       <article className="ticket-details__card">
+        <h3>Add Activity Update</h3>
+
+        <form className="ticket-details__form" onSubmit={handleAddUpdate}>
+          <label htmlFor="ticket-update">Update message</label>
+
+          <textarea
+            id="ticket-update"
+            value={newUpdate}
+            onChange={(event) => setNewUpdate(event.target.value)}
+            placeholder="Enter a new update for this ticket..."
+          />
+
+          <button type="submit">Add Update</button>
+        </form>
+      </article>
+
+      <article className="ticket-details__card">
         <h3>Activity Updates</h3>
 
-        <ul className="ticket-details__updates">
-          {ticket.comments.map((comment, index) => (
-            <li key={index}>{comment}</li>
-          ))}
-        </ul>
+        {updates.length === 0 ? (
+          <p>No activity updates have been added yet.</p>
+        ) : (
+          <ul className="ticket-details__updates">
+            {updates.map((update) => (
+              <li key={update.id}>
+                <span>{update.message}</span>
+
+                <button
+                  type="button"
+                  onClick={() => handleRemoveUpdate(update.id)}
+                >
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </article>
     </section>
   );
 }
 
-export default TicketDetails
+export default TicketDetails;
