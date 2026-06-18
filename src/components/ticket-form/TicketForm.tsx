@@ -1,19 +1,19 @@
 import { useState } from 'react'
 import './TicketForm.css'
 import { useFormValidation } from '../../hooks'
-
-export type Ticket = {
-  id: number
-  title: string
-  status: string
-  priority: string
-  owner: string
-}
+import TicketsService from '../../services/TicketsService'
+import type { Ticket } from '../../types/Ticket'
 
 interface TicketFormProps {
   onAddTicket: (ticket: Ticket) => void
 }
 
+/**
+ * TicketForm component
+ * - Uses `useFormValidation` hook for presentation-only validation logic.
+ * - Calls `TicketsService.createTicket` to persist new tickets (service -> repository).
+ * - Notifies parent via `onAddTicket` after repository confirms creation.
+ */
 function TicketForm({ onAddTicket }: TicketFormProps) {
   const [title, setTitle] = useState('')
   const [status, setStatus] = useState('Open')
@@ -21,7 +21,7 @@ function TicketForm({ onAddTicket }: TicketFormProps) {
   const [owner, setOwner] = useState('')
   const { errors, validateFields, clearErrors } = useFormValidation()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     const isValid = validateFields(
@@ -41,15 +41,15 @@ function TicketForm({ onAddTicket }: TicketFormProps) {
       return
     }
 
-    const newTicket: Ticket = {
-      id: Date.now(),
+    // Create via service which calls repository (test data in-memory)
+    const created = await TicketsService.createTicket({
       title: title.trim(),
       status,
       priority,
       owner: owner.trim(),
-    }
+    })
 
-    onAddTicket(newTicket)
+    onAddTicket(created)
 
     // Reset form
     setTitle('')

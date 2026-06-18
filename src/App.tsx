@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import './App.css'
 import Layout from './components/Layout'
@@ -6,39 +6,31 @@ import HomePage from './pages/HomePage'
 import KanbanPage from './pages/KanbanPage'
 import TicketsPage from './pages/TicketsPage'
 import DetailsPage from './pages/DetailsPage'
-import type { Ticket } from './components/ticket-form/TicketForm'
+import type { Ticket } from './types/Ticket'
+import TicketsService from './services/TicketsService'
 
 function App() {
-  const [tickets, setTickets] = useState<Ticket[]>([
-    {
-      id: 1,
-      title: 'User cannot access dashboard',
-      status: 'Open',
-      priority: 'High',
-      owner: 'Aashish',
-    },
-    {
-      id: 2,
-      title: 'Email notification not sending',
-      status: 'In Progress',
-      priority: 'Medium',
-      owner: 'Team Ops',
-    },
-    {
-      id: 3,
-      title: 'Add search filter to ticket list',
-      status: 'Planned',
-      priority: 'Low',
-      owner: 'Dev Squad',
-    },
-  ])
+  const [tickets, setTickets] = useState<Ticket[]>([])
 
-  function addTicket(ticket: Ticket) {
-    setTickets((currentTickets) => [...currentTickets, ticket])
+  useEffect(() => {
+    // Load tickets from repository via service (uses test data)
+    TicketsService.fetchAll().then((items) => setTickets(items))
+  }, [])
+
+
+  async function addTicket(ticket: Ticket) {
+    const created = await TicketsService.createTicket({
+      title: ticket.title,
+      status: ticket.status,
+      priority: ticket.priority,
+      owner: ticket.owner,
+    })
+    setTickets((currentTickets) => [...currentTickets, created])
   }
 
-  function removeTicket(ticketId: number) {
-    setTickets((currentTickets) => currentTickets.filter((t) => t.id !== ticketId))
+  async function removeTicket(ticketId: number) {
+    const ok = await TicketsService.deleteTicket(ticketId)
+    if (ok) setTickets((currentTickets) => currentTickets.filter((t) => t.id !== ticketId))
   }
 
   return (
