@@ -1,99 +1,24 @@
-import { type Dispatch, type FormEvent, type SetStateAction, useState } from "react";
+import { type Dispatch, type FormEvent, type SetStateAction } from "react";
+import { useKanbanTasks } from "../../hooks/useKanbanTasks";
+import type {
+  KanbanColumn,
+  DraftKanbanTask,
+  KanbanTask,
+  KanbanTaskColumnId,
+} from "../../types/KanbanTask";
 import "./KanbanBoard.css";
 
-interface KanbanTask {
-  id: number;
-  title: string;
-  priority: "High" | "Medium" | "Low";
-}
-
-interface KanbanColumn {
-  id: number;
-  title: string;
-  description: string;
+interface KanbanColumnWithTasks extends KanbanColumn {
   tasks: KanbanTask[];
 }
 
-type DraftTask = {
-  title: string;
-  columnId: number;
-  priority: KanbanTask["priority"];
-};
-
 interface KanbanTaskFormProps {
-  draftTask: DraftTask;
-  setDraftTask: Dispatch<SetStateAction<DraftTask>>;
-  columns: KanbanColumn[];
+  draftTask: DraftKanbanTask;
+  setDraftTask: Dispatch<SetStateAction<DraftKanbanTask>>;
+  columns: KanbanColumnWithTasks[];
   validationError: string;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }
-
-const initialKanbanColumns: KanbanColumn[] = [
-  {
-    id: 1,
-    title: "To Do",
-    description: "Tasks waiting to be started.",
-    tasks: [
-      {
-        id: 101,
-        title: "Create ticket display layout",
-        priority: "Medium",
-      },
-      {
-        id: 102,
-        title: "Plan dashboard structure and components",
-        priority: "Low",
-      },
-    ],
-  },
-  {
-    id: 2,
-    title: "In Progress",
-    description: "Tasks currently being worked on.",
-    tasks: [
-      {
-        id: 201,
-        title: "Preliminary Kanban board design and layout",
-        priority: "High",
-      },
-      {
-        id: 202,
-        title: "Preliminary ticket details page design and layout",
-        priority: "Medium",
-      },
-    ],
-  },
-  {
-    id: 3,
-    title: "Review",
-    description: "Tasks ready for team review.",
-    tasks: [
-      {
-        id: 301,
-        title: "Review style guide and README documentation",
-        priority: "High",
-      },
-    ],
-  },
-  {
-    id: 4,
-    title: "Done",
-    description: "Completed workflow items.",
-    tasks: [
-      {
-        id: 401,
-        title: "Set up TaskOps project structure",
-        priority: "Low",
-      },
-    ],
-  },
-];
-
-const defaultDraftTask: DraftTask = {
-  title: "",
-  columnId: initialKanbanColumns[0].id,
-  priority: "Medium",
-};
 
 function KanbanTaskForm({
   draftTask,
@@ -127,7 +52,7 @@ function KanbanTaskForm({
           onChange={(event) =>
             setDraftTask((currentDraft) => ({
               ...currentDraft,
-              columnId: Number(event.target.value),
+              columnId: Number(event.target.value) as KanbanTaskColumnId,
             }))
           }
         >
@@ -164,53 +89,26 @@ function KanbanTaskForm({
   );
 }
 
+/*
+ * This component uses the hook-service-repository architecture.
+ * The component renders the Kanban UI.
+ * The hook manages React interaction state.
+ * The service handles validation and task business rules.
+ * The repository stores and modifies KanbanTask data.
+ */
 export default function KanbanBoard() {
-  const [kanbanColumns, setKanbanColumns] =
-    useState<KanbanColumn[]>(initialKanbanColumns);
-  const [draftTask, setDraftTask] = useState<DraftTask>(defaultDraftTask);
-  const [validationError, setValidationError] = useState("");
+  const {
+    columns,
+    draftTask,
+    validationError,
+    setDraftTask,
+    addTask,
+    removeTask,
+  } = useKanbanTasks();
 
-  const addTask = (event: FormEvent<HTMLFormElement>) => {
+  const handleAddTask = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    const trimmedTitle = draftTask.title.trim();
-    if (!trimmedTitle) {
-      setValidationError("Task title is required.");
-      return;
-    }
-
-    setKanbanColumns((currentColumns) =>
-      currentColumns.map((column) =>
-        column.id === draftTask.columnId
-          ? {
-              ...column,
-              tasks: [
-                ...column.tasks,
-                {
-                  id: Date.now(),
-                  title: trimmedTitle,
-                  priority: draftTask.priority,
-                },
-              ],
-            }
-          : column
-      )
-    );
-
-    setDraftTask((currentDraft) => ({
-      ...defaultDraftTask,
-      columnId: currentDraft.columnId,
-    }));
-    setValidationError("");
-  };
-
-  const removeTask = (taskId: number) => {
-    setKanbanColumns((currentColumns) =>
-      currentColumns.map((column) => ({
-        ...column,
-        tasks: column.tasks.filter((task) => task.id !== taskId),
-      }))
-    );
+    addTask();
   };
 
   return (
@@ -223,13 +121,13 @@ export default function KanbanBoard() {
       <KanbanTaskForm
         draftTask={draftTask}
         setDraftTask={setDraftTask}
-        columns={kanbanColumns}
+        columns={columns}
         validationError={validationError}
-        onSubmit={addTask}
+        onSubmit={handleAddTask}
       />
 
       <ul className="kanban-board__columns" aria-label="Kanban workflow columns">
-        {kanbanColumns.map((column) => (
+        {columns.map((column) => (
           <li className="kanban-board__column" key={column.id}>
             <article className="kanban-board__panel">
               <header className="kanban-board__column-header">
