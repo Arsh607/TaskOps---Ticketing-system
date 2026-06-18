@@ -40,48 +40,19 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route
-          index
-          element={
-            <HomePage
-              viewCount={viewCount}
-              incrementViewCount={incrementViewCount}
-            />
-          }
-        />
-
-        <Route
-          path="kanban"
-          element={
-            <KanbanPage
-              viewCount={viewCount}
-              incrementViewCount={incrementViewCount}
-            />
-          }
-        />
-
+        <Route index element={<HomePage />} />
+        <Route path="kanban" element={<KanbanPage />} />
         <Route
           path="tickets"
           element={
             <TicketsPage
-              viewCount={viewCount}
-              incrementViewCount={incrementViewCount}
               tickets={tickets}
               onAddTicket={addTicket}
               onRemoveTicket={removeTicket}
             />
           }
         />
-
-        <Route
-          path="details"
-          element={
-            <DetailsPage
-              viewCount={viewCount}
-              incrementViewCount={incrementViewCount}
-            />
-          }
-        />
+        <Route path="details" element={<DetailsPage />} />
       </Route>
     </Routes>
   )

@@ -1,79 +1,115 @@
+import { type Dispatch, type FormEvent, type SetStateAction } from "react";
+import { useKanbanTasks } from "../../hooks/useKanbanTasks";
+import type {
+  KanbanColumn,
+  DraftKanbanTask,
+  KanbanTask,
+  KanbanTaskColumnId,
+} from "../../types/KanbanTask";
 import "./KanbanBoard.css";
 
-interface KanbanTask {
-  id: number;
-  title: string;
-  priority: "High" | "Medium" | "Low";
-}
-
-interface KanbanColumn {
-  id: number;
-  title: string;
-  description: string;
+interface KanbanColumnWithTasks extends KanbanColumn {
   tasks: KanbanTask[];
 }
 
+interface KanbanTaskFormProps {
+  draftTask: DraftKanbanTask;
+  setDraftTask: Dispatch<SetStateAction<DraftKanbanTask>>;
+  columns: KanbanColumnWithTasks[];
+  validationError: string;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+}
+
+function KanbanTaskForm({
+  draftTask,
+  setDraftTask,
+  columns,
+  validationError,
+  onSubmit,
+}: KanbanTaskFormProps) {
+  return (
+    <form className="kanban-board__form" onSubmit={onSubmit}>
+      <label>
+        Task title
+        <input
+          type="text"
+          value={draftTask.title}
+          placeholder="Enter a ticket task"
+          onChange={(event) =>
+            setDraftTask((currentDraft) => ({
+              ...currentDraft,
+              title: event.target.value,
+            }))
+          }
+          aria-invalid={validationError ? "true" : "false"}
+        />
+      </label>
+
+      <label>
+        Column
+        <select
+          value={draftTask.columnId}
+          onChange={(event) =>
+            setDraftTask((currentDraft) => ({
+              ...currentDraft,
+              columnId: Number(event.target.value) as KanbanTaskColumnId,
+            }))
+          }
+        >
+          {columns.map((column) => (
+            <option key={column.id} value={column.id}>
+              {column.title}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label>
+        Priority
+        <select
+          value={draftTask.priority}
+          onChange={(event) =>
+            setDraftTask((currentDraft) => ({
+              ...currentDraft,
+              priority: event.target.value as KanbanTask["priority"],
+            }))
+          }
+        >
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+      </label>
+
+      <button type="submit">Add task</button>
+      {validationError && (
+        <p className="kanban-board__form-error">{validationError}</p>
+      )}
+    </form>
+  );
+}
+
+/*
+ * This component uses the hook-service-repository architecture.
+ * The component renders the Kanban UI.
+ * The hook manages React interaction state.
+ * The service handles validation and task business rules.
+ * The repository stores and modifies KanbanTask data.
+ */
 export default function KanbanBoard() {
-  const kanbanColumns: KanbanColumn[] = [
-    {
-      id: 1,
-      title: "To Do",
-      description: "Tasks waiting to be started.",
-      tasks: [
-        {
-          id: 101,
-          title: "Create ticket display layout",
-          priority: "Medium",
-        },
-        {
-          id: 102,
-          title: "Plan dashboard structure and components",
-          priority: "Low",
-        },
-      ],
-    },
-    {
-      id: 2,
-      title: "In Progress",
-      description: "Tasks currently being worked on.",
-      tasks: [
-        {
-          id: 201,
-          title: "Preliminary Kanban board design and layout",
-          priority: "High",
-        },
-        {
-          id: 202,
-          title: "Preliminary ticket details page design and layout",
-          priority: "Medium",
-        },
-      ],
-    },
-    {
-      id: 3,
-      title: "Review",
-      description: "Tasks ready for team review.",
-      tasks: [
-        {
-          id: 301,
-          title: "Review style guide and README documentation",
-          priority: "High",
-        },
-      ],
-    },
-    {
-      id: 4,
-      title: "Done",
-      description: "Completed workflow items.",
-      tasks: [
-        {
-          id: 401,
-          title: "Set up TaskOps project structure",
-          priority: "Low",
-        },
-      ],
-    },
-  ];
+  const {
+    columns,
+    draftTask,
+    validationError,
+    setDraftTask,
+    addTask,
+    removeTask,
+  } = useKanbanTasks();
+
+  const handleAddTask = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    addTask();
+  };
 
   return (
     <section className="kanban-board" aria-labelledby="kanban-board-title">
@@ -82,8 +118,16 @@ export default function KanbanBoard() {
         <p>Organize your project tickets by workflow stage and priority.</p>
       </header>
 
+      <KanbanTaskForm
+        draftTask={draftTask}
+        setDraftTask={setDraftTask}
+        columns={columns}
+        validationError={validationError}
+        onSubmit={handleAddTask}
+      />
+
       <ul className="kanban-board__columns" aria-label="Kanban workflow columns">
-        {kanbanColumns.map((column) => (
+        {columns.map((column) => (
           <li className="kanban-board__column" key={column.id}>
             <article className="kanban-board__panel">
               <header className="kanban-board__column-header">
@@ -97,7 +141,16 @@ export default function KanbanBoard() {
               >
                 {column.tasks.map((task) => (
                   <li className="kanban-board__task" key={task.id}>
-                    <h4>{task.title}</h4>
+                    <div className="kanban-board__task-heading">
+                      <h4>{task.title}</h4>
+                      <button
+                        type="button"
+                        onClick={() => removeTask(task.id)}
+                        aria-label={`Remove ${task.title}`}
+                      >
+                        Remove
+                      </button>
+                    </div>
                     <p>
                       Priority:{" "}
                       <span
