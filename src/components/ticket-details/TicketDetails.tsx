@@ -1,5 +1,11 @@
 import "./TicketDetails.css";
+import { useTicketUpdates } from "../../hooks/useTicketUpdates";
 
+/*
+  TicketDetails uses the useTicketUpdates hook to separate presentation state
+  from the component. The hook calls the ticketUpdateService for business logic,
+  and the service calls the ticketUpdateRepository for test data access.
+*/
 function TicketDetails() {
   const ticket = {
     id: "TKT-1042",
@@ -14,12 +20,16 @@ function TicketDetails() {
       "The user is unable to access the dashboard after logging into the application. The page loads briefly and then displays a blank screen.",
     impact:
       "This issue prevents the user from viewing assigned tickets, notifications, and task updates.",
-    comments: [
-      "User confirmed the issue happens after login.",
-      "Support team checked browser console and found a possible authentication error.",
-      "Issue assigned to Application Support for further investigation.",
-    ],
   };
+
+  const {
+    updates,
+    newUpdate,
+    setNewUpdate,
+    errorMessage,
+    handleAddUpdate,
+    handleRemoveUpdate,
+  } = useTicketUpdates(ticket.id);
 
   return (
     <section className="ticket-details">
@@ -76,16 +86,56 @@ function TicketDetails() {
       </article>
 
       <article className="ticket-details__card">
+        <h3>Add Activity Update</h3>
+
+        <form
+          className="ticket-details__form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            handleAddUpdate("Arshdeep");
+          }}
+        >
+          <label htmlFor="ticket-update">Update message</label>
+
+          <textarea
+            id="ticket-update"
+            value={newUpdate}
+            onChange={(event) => setNewUpdate(event.target.value)}
+            placeholder="Enter a new update for this ticket..."
+          />
+
+          {errorMessage && (
+            <p className="ticket-details__error">{errorMessage}</p>
+          )}
+
+          <button type="submit">Add Update</button>
+        </form>
+      </article>
+
+      <article className="ticket-details__card">
         <h3>Activity Updates</h3>
 
-        <ul className="ticket-details__updates">
-          {ticket.comments.map((comment, index) => (
-            <li key={index}>{comment}</li>
-          ))}
-        </ul>
+        {updates.length === 0 ? (
+          <p>No activity updates have been added yet.</p>
+        ) : (
+          <ul className="ticket-details__updates">
+            {updates.map((update) => (
+              <li key={update.id}>
+                <span>{update.message}</span>
+
+                <button
+                  type="button"
+                  onClick={() => handleRemoveUpdate(update.id)}
+                >
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </article>
     </section>
   );
 }
 
-export default TicketDetails
+export default TicketDetails;

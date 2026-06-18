@@ -10,7 +10,6 @@ import type { Ticket } from './types/Ticket'
 import TicketsService from './services/TicketsService'
 
 function App() {
-  const [viewCount, setViewCount] = useState(0)
   const [tickets, setTickets] = useState<Ticket[]>([])
 
   useEffect(() => {
@@ -18,9 +17,6 @@ function App() {
     TicketsService.fetchAll().then((items) => setTickets(items))
   }, [])
 
-  function incrementViewCount() {
-    setViewCount((currentViewCount) => currentViewCount + 1)
-  }
 
   async function addTicket(ticket: Ticket) {
     const created = await TicketsService.createTicket({
@@ -40,48 +36,19 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route
-          index
-          element={
-            <HomePage
-              viewCount={viewCount}
-              incrementViewCount={incrementViewCount}
-            />
-          }
-        />
-
-        <Route
-          path="kanban"
-          element={
-            <KanbanPage
-              viewCount={viewCount}
-              incrementViewCount={incrementViewCount}
-            />
-          }
-        />
-
+        <Route index element={<HomePage />} />
+        <Route path="kanban" element={<KanbanPage />} />
         <Route
           path="tickets"
           element={
             <TicketsPage
-              viewCount={viewCount}
-              incrementViewCount={incrementViewCount}
               tickets={tickets}
               onAddTicket={addTicket}
               onRemoveTicket={removeTicket}
             />
           }
         />
-
-        <Route
-          path="details"
-          element={
-            <DetailsPage
-              viewCount={viewCount}
-              incrementViewCount={incrementViewCount}
-            />
-          }
-        />
+        <Route path="details" element={<DetailsPage />} />
       </Route>
     </Routes>
   )

@@ -2,19 +2,16 @@ import { useState } from 'react'
 import TicketList from '../components/ticket-list/TicketList'
 import TicketForm from '../components/ticket-form/TicketForm'
 import SharedViewCounter from '../components/shared-view-counter/SharedViewCounter'
-import type { SharedCounterProps } from '../types/SharedCounterProps'
 import type { Ticket } from '../types/Ticket'
 import './TicketsPage.css'
 
-interface TicketsPageProps extends SharedCounterProps {
+interface TicketsPageProps {
   tickets: Ticket[]
   onAddTicket: (ticket: Ticket) => void
   onRemoveTicket: (ticketId: number) => void
 }
 
 function TicketsPage({
-  viewCount,
-  incrementViewCount,
   tickets,
   onAddTicket,
   onRemoveTicket,
@@ -48,10 +45,7 @@ function TicketsPage({
 
       <TicketList tickets={tickets} onRemoveTicket={onRemoveTicket} />
 
-      <SharedViewCounter
-        viewCount={viewCount}
-        incrementViewCount={incrementViewCount}
-      />
+      <SharedViewCounter />
     </section>
   )
 }
