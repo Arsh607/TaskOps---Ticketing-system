@@ -9,7 +9,6 @@ import DetailsPage from './pages/DetailsPage'
 import type { Ticket } from './components/ticket-form/TicketForm'
 
 function App() {
-  const [viewCount, setViewCount] = useState(0)
   const [tickets, setTickets] = useState<Ticket[]>([
     {
       id: 1,
@@ -34,10 +33,6 @@ function App() {
     },
   ])
 
-  function incrementViewCount() {
-    setViewCount((currentViewCount) => currentViewCount + 1)
-  }
-
   function addTicket(ticket: Ticket) {
     setTickets((currentTickets) => [...currentTickets, ticket])
   }
@@ -49,48 +44,19 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route
-          index
-          element={
-            <HomePage
-              viewCount={viewCount}
-              incrementViewCount={incrementViewCount}
-            />
-          }
-        />
-
-        <Route
-          path="kanban"
-          element={
-            <KanbanPage
-              viewCount={viewCount}
-              incrementViewCount={incrementViewCount}
-            />
-          }
-        />
-
+        <Route index element={<HomePage />} />
+        <Route path="kanban" element={<KanbanPage />} />
         <Route
           path="tickets"
           element={
             <TicketsPage
-              viewCount={viewCount}
-              incrementViewCount={incrementViewCount}
               tickets={tickets}
               onAddTicket={addTicket}
               onRemoveTicket={removeTicket}
             />
           }
         />
-
-        <Route
-          path="details"
-          element={
-            <DetailsPage
-              viewCount={viewCount}
-              incrementViewCount={incrementViewCount}
-            />
-          }
-        />
+        <Route path="details" element={<DetailsPage />} />
       </Route>
     </Routes>
   )

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './TicketForm.css'
+import { useFormValidation } from '../../hooks'
 
 export type Ticket = {
   id: number
@@ -18,29 +19,25 @@ function TicketForm({ onAddTicket }: TicketFormProps) {
   const [status, setStatus] = useState('Open')
   const [priority, setPriority] = useState('Medium')
   const [owner, setOwner] = useState('')
-  const [errors, setErrors] = useState<Record<string, string>>({})
-
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {}
-
-    if (!title.trim()) {
-      newErrors.title = 'Title is required'
-    }
-    if (title.trim().length < 3) {
-      newErrors.title = 'Title must be at least 3 characters'
-    }
-    if (!owner.trim()) {
-      newErrors.owner = 'Owner is required'
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+  const { errors, validateFields, clearErrors } = useFormValidation()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!validateForm()) {
+    const isValid = validateFields(
+      { title, owner },
+      {
+        title: [
+          (value) => (!value.trim() ? 'Title is required' : null),
+          (value) => (value.trim().length < 3 ? 'Title must be at least 3 characters' : null)
+        ],
+        owner: [
+          (value) => (!value.trim() ? 'Owner is required' : null)
+        ]
+      }
+    )
+
+    if (!isValid) {
       return
     }
 
@@ -59,7 +56,7 @@ function TicketForm({ onAddTicket }: TicketFormProps) {
     setStatus('Open')
     setPriority('Medium')
     setOwner('')
-    setErrors({})
+    clearErrors()
   }
 
   return (
