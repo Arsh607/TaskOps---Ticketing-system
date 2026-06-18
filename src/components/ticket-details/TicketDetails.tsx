@@ -1,11 +1,21 @@
 import { useState } from "react";
 import "./TicketDetails.css";
+import {
+  createTicketUpdate,
+  removeTicketUpdate,
+  validateUpdateMessage,
+} from "../../services/ticketUpdateService";
 
 interface TicketUpdate {
   id: number;
   message: string;
 }
 
+/*
+  TicketDetails uses the ticketUpdateService to move business logic
+  out of the component. The component is responsible for rendering the UI,
+  while the service handles validation, creating update objects, and removing updates.
+*/
 function TicketDetails() {
   const ticket = {
     id: "TKT-1042",
@@ -23,6 +33,7 @@ function TicketDetails() {
   };
 
   const [newUpdate, setNewUpdate] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [updates, setUpdates] = useState<TicketUpdate[]>([
     {
       id: 1,
@@ -43,21 +54,22 @@ function TicketDetails() {
   function handleAddUpdate(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (newUpdate.trim() === "") {
+    const error = validateUpdateMessage(newUpdate);
+
+    if (error) {
+      setErrorMessage(error);
       return;
     }
 
-    const updateToAdd: TicketUpdate = {
-      id: Date.now(),
-      message: newUpdate,
-    };
+    const updateToAdd = createTicketUpdate(newUpdate);
 
     setUpdates([...updates, updateToAdd]);
     setNewUpdate("");
+    setErrorMessage("");
   }
 
   function handleRemoveUpdate(updateId: number) {
-    const filteredUpdates = updates.filter((update) => update.id !== updateId);
+    const filteredUpdates = removeTicketUpdate(updates, updateId);
     setUpdates(filteredUpdates);
   }
 
@@ -127,6 +139,10 @@ function TicketDetails() {
             onChange={(event) => setNewUpdate(event.target.value)}
             placeholder="Enter a new update for this ticket..."
           />
+
+          {errorMessage && (
+            <p className="ticket-details__error">{errorMessage}</p>
+          )}
 
           <button type="submit">Add Update</button>
         </form>
