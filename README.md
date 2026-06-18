@@ -135,3 +135,15 @@ Displays:
 - ticket-details feature page and form component: Arshdeep
 
 ---
+---
+
+# Sprint 3
+
+- T.1: Hook Definition(s): Krupa
+- T.2: Service Definition(s): Arshdeep
+- T.4: Shared-page-state Refactor: Muse
+- kanban-task resource, test-data and hooks, services, and repository architecture: Muse
+- service, types and repository and custom hooks for ticket-form resource: Krupa
+- Refactored the Ticket Details feature to follow the Hook–Service–Repository: Arshdeep
+
+---
