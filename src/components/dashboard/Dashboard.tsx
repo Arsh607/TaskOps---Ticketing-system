@@ -1,8 +1,8 @@
 import { useState } from "react";
+import RecentTicketUpdates from "../recent-ticket-updates/RecentTicketUpdates";
 import "./Dashboard.css";
 
 function Dashboard() {
-
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -28,10 +28,11 @@ function Dashboard() {
           </nav>
         )}
 
-
         <article className="dashboard__card">
           <p className="dashboard__label">Welcome back</p>
           <h1>TaskOps Dashboard</h1>
+
+          <RecentTicketUpdates />
         </article>
       </section>
 

@@ -1,20 +1,10 @@
-import { useState } from "react";
 import "./TicketDetails.css";
-import {
-  createTicketUpdate,
-  removeTicketUpdate,
-  validateUpdateMessage,
-} from "../../services/ticketUpdateService";
-
-interface TicketUpdate {
-  id: number;
-  message: string;
-}
+import { useTicketUpdates } from "../../hooks/useTicketUpdates";
 
 /*
-  TicketDetails uses the ticketUpdateService to move business logic
-  out of the component. The component is responsible for rendering the UI,
-  while the service handles validation, creating update objects, and removing updates.
+  TicketDetails uses the useTicketUpdates hook to separate presentation state
+  from the component. The hook calls the ticketUpdateService for business logic,
+  and the service calls the ticketUpdateRepository for test data access.
 */
 function TicketDetails() {
   const ticket = {
@@ -32,46 +22,14 @@ function TicketDetails() {
       "This issue prevents the user from viewing assigned tickets, notifications, and task updates.",
   };
 
-  const [newUpdate, setNewUpdate] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [updates, setUpdates] = useState<TicketUpdate[]>([
-    {
-      id: 1,
-      message: "User confirmed the issue happens after login.",
-    },
-    {
-      id: 2,
-      message:
-        "Support team checked browser console and found a possible authentication error.",
-    },
-    {
-      id: 3,
-      message:
-        "Issue assigned to Application Support for further investigation.",
-    },
-  ]);
-
-  function handleAddUpdate(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const error = validateUpdateMessage(newUpdate);
-
-    if (error) {
-      setErrorMessage(error);
-      return;
-    }
-
-    const updateToAdd = createTicketUpdate(newUpdate);
-
-    setUpdates([...updates, updateToAdd]);
-    setNewUpdate("");
-    setErrorMessage("");
-  }
-
-  function handleRemoveUpdate(updateId: number) {
-    const filteredUpdates = removeTicketUpdate(updates, updateId);
-    setUpdates(filteredUpdates);
-  }
+  const {
+    updates,
+    newUpdate,
+    setNewUpdate,
+    errorMessage,
+    handleAddUpdate,
+    handleRemoveUpdate,
+  } = useTicketUpdates(ticket.id);
 
   return (
     <section className="ticket-details">
@@ -130,7 +88,13 @@ function TicketDetails() {
       <article className="ticket-details__card">
         <h3>Add Activity Update</h3>
 
-        <form className="ticket-details__form" onSubmit={handleAddUpdate}>
+        <form
+          className="ticket-details__form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            handleAddUpdate("Arshdeep");
+          }}
+        >
           <label htmlFor="ticket-update">Update message</label>
 
           <textarea
