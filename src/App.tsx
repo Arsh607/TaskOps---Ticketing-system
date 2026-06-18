@@ -10,6 +10,7 @@ import type { Ticket } from './types/Ticket'
 import TicketsService from './services/TicketsService'
 
 function App() {
+  const [viewCount, setViewCount] = useState(0)
   const [tickets, setTickets] = useState<Ticket[]>([])
 
   useEffect(() => {
