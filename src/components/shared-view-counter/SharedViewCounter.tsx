@@ -1,7 +1,9 @@
 import './SharedViewCounter.css'
-import type { SharedCounterProps } from '../../types/SharedCounterProps'
+import { useSharedViewCounter } from '../../hooks/useSharedViewCounter'
 
-function SharedViewCounter({ viewCount, incrementViewCount }: SharedCounterProps) {
+function SharedViewCounter() {
+  const { viewCount, incrementViewCount } = useSharedViewCounter()
+
   return (
     <button
       className="shared-view-counter"

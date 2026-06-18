@@ -1,65 +1,62 @@
 import { useState } from 'react'
 import './TicketForm.css'
-
-export type Ticket = {
-  id: number
-  title: string
-  status: string
-  priority: string
-  owner: string
-}
+import { useFormValidation } from '../../hooks'
+import TicketsService from '../../services/TicketsService'
+import type { Ticket } from '../../types/Ticket'
 
 interface TicketFormProps {
   onAddTicket: (ticket: Ticket) => void
 }
 
+/**
+ * TicketForm component
+ * - Uses `useFormValidation` hook for presentation-only validation logic.
+ * - Calls `TicketsService.createTicket` to persist new tickets (service -> repository).
+ * - Notifies parent via `onAddTicket` after repository confirms creation.
+ */
 function TicketForm({ onAddTicket }: TicketFormProps) {
   const [title, setTitle] = useState('')
   const [status, setStatus] = useState('Open')
   const [priority, setPriority] = useState('Medium')
   const [owner, setOwner] = useState('')
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const { errors, validateFields, clearErrors } = useFormValidation()
 
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {}
-
-    if (!title.trim()) {
-      newErrors.title = 'Title is required'
-    }
-    if (title.trim().length < 3) {
-      newErrors.title = 'Title must be at least 3 characters'
-    }
-    if (!owner.trim()) {
-      newErrors.owner = 'Owner is required'
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!validateForm()) {
+    const isValid = validateFields(
+      { title, owner },
+      {
+        title: [
+          (value) => (!value.trim() ? 'Title is required' : null),
+          (value) => (value.trim().length < 3 ? 'Title must be at least 3 characters' : null)
+        ],
+        owner: [
+          (value) => (!value.trim() ? 'Owner is required' : null)
+        ]
+      }
+    )
+
+    if (!isValid) {
       return
     }
 
-    const newTicket: Ticket = {
-      id: Date.now(),
+    // Create via service which calls repository (test data in-memory)
+    const created = await TicketsService.createTicket({
       title: title.trim(),
       status,
       priority,
       owner: owner.trim(),
-    }
+    })
 
-    onAddTicket(newTicket)
+    onAddTicket(created)
 
     // Reset form
     setTitle('')
     setStatus('Open')
     setPriority('Medium')
     setOwner('')
-    setErrors({})
+    clearErrors()
   }
 
   return (
