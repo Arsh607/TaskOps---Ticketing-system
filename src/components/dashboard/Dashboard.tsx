@@ -1,16 +1,16 @@
-import { useState } from "react";
 import "./Dashboard.css";
+import { useToggle } from "../../hooks";
 
 function Dashboard() {
 
-  const [menuOpen, setMenuOpen] = useState(false);
+  const { isOpen: menuOpen, toggle: toggleMenu } = useToggle(false);
 
   return (
     <main className="dashboard">
       <section className="dashboard__content">
         <button
           className="dashboard__menu-button"
-          onClick={() => setMenuOpen(!menuOpen)}
+          onClick={toggleMenu}
           aria-label="Open navigation menu"
         >
           ☰
