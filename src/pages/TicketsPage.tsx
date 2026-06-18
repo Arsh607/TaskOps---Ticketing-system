@@ -3,7 +3,7 @@ import TicketList from '../components/ticket-list/TicketList'
 import TicketForm from '../components/ticket-form/TicketForm'
 import SharedViewCounter from '../components/shared-view-counter/SharedViewCounter'
 import type { SharedCounterProps } from '../types/SharedCounterProps'
-import type { Ticket } from '../components/ticket-form/TicketForm'
+import type { Ticket } from '../types/Ticket'
 import './TicketsPage.css'
 
 interface TicketsPageProps extends SharedCounterProps {
