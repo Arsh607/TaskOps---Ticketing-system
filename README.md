@@ -92,6 +92,21 @@ Displays:
 - TypeScript
 - Vite
 
+## Backend
+- Node.js
+- Express
+- TypeScript
+
+## Repository Structure
+- `apps/frontend`: React/Vite frontend workspace
+- `apps/backend`: Node.js/Express backend workspace
+
+## Local Development
+- `npm run dev:frontend`: starts the frontend app
+- `npm run dev:backend`: starts the backend API
+- `npm run build`: builds all npm workspaces
+- `npm run lint`: lints the full monorepo
+
 ## Version Control
 - Git
 - GitHub
