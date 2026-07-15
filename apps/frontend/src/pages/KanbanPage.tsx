@@ -1,10 +1,10 @@
 import KanbanBoard from '../components/kanban-board/KanbanBoard'
 import SharedViewCounter from '../components/shared-view-counter/SharedViewCounter'
+import './KanbanPage.css'
 
 function KanbanPage() {
   return (
-    <section>
-      <h2>Kanban Board</h2>
+    <section className="kanban-page">
       <KanbanBoard />
 
       <SharedViewCounter />
