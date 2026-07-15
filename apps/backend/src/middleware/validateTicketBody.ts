@@ -2,8 +2,6 @@ import type { Request, Response, NextFunction } from 'express'
 
 const requiredFields = ['title', 'status', 'priority', 'owner'] as const
 
-type TicketField = (typeof requiredFields)[number]
-
 export function validateTicketBody(
   request: Request,
   response: Response,
