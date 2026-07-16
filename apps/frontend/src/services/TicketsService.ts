@@ -1,26 +1,25 @@
 import type { Ticket } from '../types/Ticket'
-import TicketsRepository from '../repositories/TicketsRepository'
+import TicketsApiRepository from '../repositories/TicketsApiRepository'
 
 export const TicketsService = {
   async fetchAll(): Promise<Ticket[]> {
-    return TicketsRepository.getAll()
+    return TicketsApiRepository.getAll()
   },
 
   async fetchById(id: number): Promise<Ticket | undefined> {
-    return TicketsRepository.getById(id)
+    return TicketsApiRepository.getById(id)
   },
 
   async createTicket(data: Omit<Ticket, 'id'>): Promise<Ticket> {
-    // minimal business logic could live here later
-    return TicketsRepository.create(data)
+    return TicketsApiRepository.create(data)
   },
 
   async updateTicket(id: number, updates: Partial<Ticket>): Promise<Ticket | undefined> {
-    return TicketsRepository.update(id, updates)
+    return TicketsApiRepository.update(id, updates)
   },
 
   async deleteTicket(id: number): Promise<boolean> {
-    return TicketsRepository.delete(id)
+    return TicketsApiRepository.delete(id)
   }
 }
 
