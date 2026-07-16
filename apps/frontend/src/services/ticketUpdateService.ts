@@ -1,8 +1,10 @@
-import type { TicketUpdate } from "../types/TicketUpdate";
 import {
   createTicketUpdate as createTicketUpdateInRepository,
-  deleteTicketUpdate,
-  getTicketUpdatesByTicketId,
+  deleteTicketUpdate as deleteTicketUpdateInRepository,
+  getTicketUpdates as getTicketUpdatesFromRepository,
+  updateTicketUpdate as updateTicketUpdateInRepository,
+  type CreateTicketUpdateInput,
+  type TicketUpdate,
 } from "../repositories/ticketUpdateRepository";
 
 export function validateUpdateMessage(message: string): string | null {
@@ -16,34 +18,58 @@ export function validateUpdateMessage(message: string): string | null {
     return "Update message must be at least 5 characters.";
   }
 
+  if (trimmedMessage.length > 1000) {
+    return "Update message cannot exceed 1000 characters.";
+  }
+
   return null;
 }
 
-export function getSortedUpdatesForTicket(ticketId: string): TicketUpdate[] {
-  const updates = getTicketUpdatesByTicketId(ticketId);
+export async function getSortedUpdatesForTicket(
+  ticketId: number,
+): Promise<TicketUpdate[]> {
+  const updates = await getTicketUpdatesFromRepository(ticketId);
 
   return [...updates].sort(
-    (a, b) =>
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    (firstUpdate, secondUpdate) =>
+      new Date(secondUpdate.createdAt).getTime() -
+      new Date(firstUpdate.createdAt).getTime(),
   );
 }
 
-export function addTicketUpdate(
-  ticketId: string,
+export async function addTicketUpdate(
+  ticketId: number,
   message: string,
-  createdBy: string
-): TicketUpdate {
-  const newUpdate: TicketUpdate = {
-    id: Date.now(),
+  createdBy: string,
+): Promise<TicketUpdate> {
+  const error = validateUpdateMessage(message);
+
+  if (error) {
+    throw new Error(error);
+  }
+
+  const input: CreateTicketUpdateInput = {
     ticketId,
     message: message.trim(),
-    createdBy,
-    createdAt: new Date().toISOString(),
+    createdBy: createdBy.trim(),
   };
 
-  return createTicketUpdateInRepository(newUpdate);
+  return createTicketUpdateInRepository(input);
 }
 
-export function removeTicketUpdate(updateId: number): void {
-  deleteTicketUpdate(updateId);
+export async function editTicketUpdate(
+  updateId: number,
+  message: string,
+): Promise<TicketUpdate> {
+  const error = validateUpdateMessage(message);
+
+  if (error) {
+    throw new Error(error);
+  }
+
+  return updateTicketUpdateInRepository(updateId, message.trim());
+}
+
+export async function removeTicketUpdate(updateId: number): Promise<void> {
+  await deleteTicketUpdateInRepository(updateId);
 }

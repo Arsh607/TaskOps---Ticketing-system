@@ -1,5 +1,5 @@
-import { useState } from "react";
-import type { TicketUpdate } from "../types/TicketUpdate";
+import { useCallback, useEffect, useState } from "react";
+import type { TicketUpdate } from "../repositories/ticketUpdateRepository";
 import {
   addTicketUpdate,
   getSortedUpdatesForTicket,
@@ -7,35 +7,71 @@ import {
   validateUpdateMessage,
 } from "../services/ticketUpdateService";
 
-export function useTicketUpdates(ticketId: string) {
-  const [updates, setUpdates] = useState<TicketUpdate[]>(
-    getSortedUpdatesForTicket(ticketId)
-  );
-
+export function useTicketUpdates(ticketId: number) {
+  const [updates, setUpdates] = useState<TicketUpdate[]>([]);
   const [newUpdate, setNewUpdate] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
-  function refreshUpdates() {
-    setUpdates(getSortedUpdatesForTicket(ticketId));
-  }
+  const refreshUpdates = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setErrorMessage("");
 
-  function handleAddUpdate(createdBy: string) {
-    const error = validateUpdateMessage(newUpdate);
+      const loadedUpdates = await getSortedUpdatesForTicket(ticketId);
+      setUpdates(loadedUpdates);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to load ticket updates.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [ticketId]);
 
-    if (error) {
-      setErrorMessage(error);
+  useEffect(() => {
+    void refreshUpdates();
+  }, [refreshUpdates]);
+
+  async function handleAddUpdate(createdBy: string) {
+    const validationError = validateUpdateMessage(newUpdate);
+
+    if (validationError) {
+      setErrorMessage(validationError);
       return;
     }
 
-    addTicketUpdate(ticketId, newUpdate, createdBy);
-    setNewUpdate("");
-    setErrorMessage("");
-    refreshUpdates();
+    try {
+      setErrorMessage("");
+
+      await addTicketUpdate(ticketId, newUpdate, createdBy);
+
+      setNewUpdate("");
+      await refreshUpdates();
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to add the ticket update.",
+      );
+    }
   }
 
-  function handleRemoveUpdate(updateId: number) {
-    removeTicketUpdate(updateId);
-    refreshUpdates();
+  async function handleRemoveUpdate(updateId: number) {
+    try {
+      setErrorMessage("");
+
+      await removeTicketUpdate(updateId);
+      await refreshUpdates();
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to remove the ticket update.",
+      );
+    }
   }
 
   return {
@@ -43,6 +79,7 @@ export function useTicketUpdates(ticketId: string) {
     newUpdate,
     setNewUpdate,
     errorMessage,
+    isLoading,
     handleAddUpdate,
     handleRemoveUpdate,
     refreshUpdates,
