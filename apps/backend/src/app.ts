@@ -1,7 +1,7 @@
 import cors from 'cors';
 import express, { type Request, type Response } from 'express';
+import ticketsRouter from './api/tickets.js';
 import { corsOptions } from './config/cors.js';
-import { prisma } from './lib/prisma.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import {
   kanbanColumnRouter,
@@ -17,20 +17,7 @@ app.get('/health', (_request: Request, response: Response) => {
   response.status(200).json({ status: 'ok', service: 'taskops-api' });
 });
 
-app.get('/tickets', async (_request: Request, response: Response) => {
-  const tickets = await prisma.ticket.findMany({
-    select: {
-      id: true,
-      title: true,
-      status: true,
-      priority: true,
-      owner: true,
-    },
-  });
-
-  response.status(200).json(tickets);
-});
-
+app.use('/tickets', ticketsRouter);
 app.use('/api/kanban-columns', kanbanColumnRouter);
 app.use('/api/kanban-tasks', kanbanTaskRouter);
 app.use(errorHandler);

@@ -21,7 +21,7 @@ KanbanBoard
 The shared view counter is not part of this persistence work. The Kanban
 resource independently meets requirements I.1 through I.4.
 
-## I.1: Backend Resource Endpoints
+## Backend Resource Endpoints
 
 The backend exposes only the routes needed by the Kanban UI:
 
@@ -43,7 +43,7 @@ Successful requests return `200`, `201`, or `204` as appropriate. Missing task
 IDs return `404`, and unexpected server errors are handled by the central error
 middleware.
 
-## I.2: Database Schema and Migration
+## Database Schema and Migration
 
 Prisma defines `KanbanColumn`, `KanbanTask`, and `KanbanPriority`. Each task has
 a foreign key to exactly one workflow column. Column titles and descriptions
@@ -61,7 +61,7 @@ This design conforms to Third Normal Form:
 Migration `20260716000000_add_kanban_resources` creates the enum, tables,
 indexes, relationship, four workflow columns, and initial Kanban task records.
 
-## I.3: Frontend Repository Uses the Backend
+## Frontend Repository Uses the Backend
 
 The frontend repository no longer imports `kanbanTaskTestData` or stores a
 mutable in-memory task list. Its methods send HTTP requests to the Kanban API.
@@ -72,7 +72,7 @@ The service retains frontend business rules, such as trimming and validating
 task titles and grouping returned tasks into their workflow columns. The React
 hook owns loading, saving, request-error, form, column, and task state.
 
-## I.4: Visible Application-State Persistence
+## Visible Application-State Persistence
 
 When the Kanban page opens, the hook reads columns and tasks from the backend.
 Adding a task sends POST, moving it sends PATCH, and removing it sends DELETE.
@@ -86,16 +86,14 @@ The **Move to** selector is the visible read/update persistence example:
 4. Refreshing or reopening the page sends GET again.
 5. The task remains in its updated column.
 
-## Validation and Verification
+## Verification
 
-Backend tests cover valid and invalid schemas and confirm that every Kanban
-route rejects inappropriate input before its controller/service runs. Run the
-verification commands from the repository root:
+Every Kanban route uses the validation middleware and an appropriate Zod
+schema before its controller runs. Verify the project from the repository root:
 
 ```powershell
 npm run lint
 npm run build
-npm run test -w @taskops/backend
 ```
 
 Apply the committed migrations to a configured database with:
