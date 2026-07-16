@@ -1,43 +1,93 @@
-import { ticketUpdatesTestData } from "../data/ticketUpdatesTestData";
-import type { TicketUpdate } from "../types/TicketUpdate";
-
-let ticketUpdates: TicketUpdate[] = [...ticketUpdatesTestData];
-
-export function getAllTicketUpdates(): TicketUpdate[] {
-  return ticketUpdates;
+export interface TicketUpdate {
+  id: number;
+  ticketId: number;
+  message: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export function getTicketUpdatesByTicketId(ticketId: string): TicketUpdate[] {
-  return ticketUpdates.filter((update) => update.ticketId === ticketId);
+export interface CreateTicketUpdateInput {
+  ticketId: number;
+  message: string;
+  createdBy: string;
 }
 
-export function createTicketUpdate(update: TicketUpdate): TicketUpdate {
-  ticketUpdates = [...ticketUpdates, update];
-  return update;
-}
+const API_URL =
+  import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
-export function updateTicketUpdate(
-  updateId: number,
-  updatedMessage: string
-): TicketUpdate | null {
-  const existingUpdate = ticketUpdates.find((update) => update.id === updateId);
+async function parseResponse<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    const errorBody = await response
+      .json()
+      .catch(() => ({
+        error: `Request failed with status ${response.status}.`,
+      }));
 
-  if (!existingUpdate) {
-    return null;
+    throw new Error(
+      errorBody.error ??
+        `Request failed with status ${response.status}.`,
+    );
   }
 
-  const updatedTicketUpdate: TicketUpdate = {
-    ...existingUpdate,
-    message: updatedMessage,
-  };
-
-  ticketUpdates = ticketUpdates.map((update) =>
-    update.id === updateId ? updatedTicketUpdate : update
-  );
-
-  return updatedTicketUpdate;
+  return response.json() as Promise<T>;
 }
 
-export function deleteTicketUpdate(updateId: number): void {
-  ticketUpdates = ticketUpdates.filter((update) => update.id !== updateId);
+export async function getTicketUpdates(
+  ticketId: number,
+): Promise<TicketUpdate[]> {
+  const response = await fetch(
+    `${API_URL}/api/tickets/${ticketId}/updates`,
+  );
+
+  return parseResponse<TicketUpdate[]>(response);
+}
+
+export async function createTicketUpdate(
+  input: CreateTicketUpdateInput,
+): Promise<TicketUpdate> {
+  const response = await fetch(`${API_URL}/api/ticket-updates`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
+  });
+
+  return parseResponse<TicketUpdate>(response);
+}
+
+export async function updateTicketUpdate(
+  updateId: number,
+  message: string,
+): Promise<TicketUpdate> {
+  const response = await fetch(
+    `${API_URL}/api/ticket-updates/${updateId}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ message }),
+    },
+  );
+
+  return parseResponse<TicketUpdate>(response);
+}
+
+export async function deleteTicketUpdate(
+  updateId: number,
+): Promise<void> {
+  const response = await fetch(
+    `${API_URL}/api/ticket-updates/${updateId}`,
+    {
+      method: "DELETE",
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `Delete request failed with status ${response.status}.`,
+    );
+  }
 }

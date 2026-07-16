@@ -1,5 +1,8 @@
 {
   "files": [],
+  "compilerOptions": {
+    "types": ["node"]
+  },
   "references": [
     { "path": "./apps/frontend" },
     { "path": "./apps/backend" }
