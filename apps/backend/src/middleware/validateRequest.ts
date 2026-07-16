@@ -1,38 +1,57 @@
-import type { NextFunction, Request, Response } from 'express';
-import type { ZodType } from 'zod';
+import type {
+  NextFunction,
+  Request,
+  RequestHandler,
+  Response,
+} from "express";
+import type { ZodType } from "zod";
 
-interface RequestSchemas {
+interface ValidationSchemas {
   body?: ZodType;
   params?: ZodType;
   query?: ZodType;
 }
 
-export function validateRequest(schemas: RequestSchemas) {
+export function validateRequest(
+  schemas: ValidationSchemas,
+): RequestHandler {
   return (request: Request, response: Response, next: NextFunction): void => {
-    const bodyResult = schemas.body?.safeParse(request.body);
-    const paramsResult = schemas.params?.safeParse(request.params);
-    const queryResult = schemas.query?.safeParse(request.query);
-    const failedResult = [bodyResult, paramsResult, queryResult].find(
-      (result) => result?.success === false,
-    );
+    const errors: Record<string, unknown> = {};
 
-    if (failedResult && !failedResult.success) {
+    if (schemas.body) {
+      const result = schemas.body.safeParse(request.body);
+
+      if (!result.success) {
+        errors.body = result.error.flatten();
+      } else {
+        request.body = result.data;
+      }
+    }
+
+    if (schemas.params) {
+      const result = schemas.params.safeParse(request.params);
+
+      if (!result.success) {
+        errors.params = result.error.flatten();
+      } else {
+        request.params = result.data as Request["params"];
+      }
+    }
+
+    if (schemas.query) {
+      const result = schemas.query.safeParse(request.query);
+
+      if (!result.success) {
+        errors.query = result.error.flatten();
+      }
+    }
+
+    if (Object.keys(errors).length > 0) {
       response.status(400).json({
-        error: 'Request validation failed.',
-        details: failedResult.error.issues.map((issue) => ({
-          path: issue.path.join('.'),
-          message: issue.message,
-        })),
+        error: "Validation failed.",
+        details: errors,
       });
       return;
-    }
-
-    if (bodyResult?.success) {
-      request.body = bodyResult.data;
-    }
-
-    if (paramsResult?.success) {
-      Object.assign(request.params, paramsResult.data);
     }
 
     next();

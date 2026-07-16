@@ -12,6 +12,21 @@ model Ticket {
   status   String
   priority String
   owner    String
+
+  updates TicketUpdate[]
+}
+
+model TicketUpdate {
+  id        Int      @id @default(autoincrement())
+  ticketId  Int
+  message   String
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
 }
 
 enum KanbanPriority {
