@@ -162,3 +162,16 @@ Displays:
 - Refactored the Ticket Details feature to follow the Hook–Service–Repository: Arshdeep
 
 ---
+---
+
+# Sprint 4
+
+- T.1: Back-end App Initialization: Muse
+- T.2: Development SQL Database: Krupa
+- T.3: Prisma Installation and Client Initialization: Krupa
+- T.4: Back-end CORS Configuration: Arshdeep
+- kanban-board backend integration: Muse
+- Ticket backend integration: Krupa
+- Ticket update backend integration: Arshdeep
+
+---
