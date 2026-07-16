@@ -1,64 +1,66 @@
-import { kanbanTaskTestData } from '../data/kanbanTaskTestData'
-import type { KanbanTask } from '../types/KanbanTask'
+import type {
+  DraftKanbanTask,
+  KanbanColumn,
+  KanbanTask,
+  KanbanTaskColumnId,
+} from '../types/KanbanTask'
 
-type KanbanTaskListener = () => void
+const apiBaseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api'
 
-let kanbanTasks: KanbanTask[] = [...kanbanTaskTestData]
-const listeners = new Set<KanbanTaskListener>()
+async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    ...init,
+    headers: init?.body
+      ? { 'Content-Type': 'application/json', ...init.headers }
+      : init?.headers,
+  })
 
-function notifyKanbanTaskListeners(): void {
-  listeners.forEach((listener) => listener())
-}
-
-export function getAllKanbanTasks(): KanbanTask[] {
-  return [...kanbanTasks]
-}
-
-export function getKanbanTaskById(taskId: number): KanbanTask | undefined {
-  return kanbanTasks.find((task) => task.id === taskId)
-}
-
-export function createKanbanTask(task: KanbanTask): KanbanTask {
-  kanbanTasks = [...kanbanTasks, task]
-  notifyKanbanTaskListeners()
-
-  return task
-}
-
-export function updateKanbanTask(
-  updatedTask: KanbanTask,
-): KanbanTask | undefined {
-  const taskIndex = kanbanTasks.findIndex((task) => task.id === updatedTask.id)
-
-  if (taskIndex === -1) {
-    return undefined
+  if (!response.ok) {
+    const result = (await response.json().catch(() => null)) as {
+      error?: string
+    } | null
+    throw new Error(result?.error ?? `Request failed with status ${response.status}.`)
   }
 
-  kanbanTasks = kanbanTasks.map((task) =>
-    task.id === updatedTask.id ? updatedTask : task,
-  )
-  notifyKanbanTaskListeners()
-
-  return updatedTask
+  return response.json() as Promise<T>
 }
 
-export function deleteKanbanTask(taskId: number): void {
-  const nextKanbanTasks = kanbanTasks.filter((task) => task.id !== taskId)
-
-  if (nextKanbanTasks.length === kanbanTasks.length) {
-    return
-  }
-
-  kanbanTasks = nextKanbanTasks
-  notifyKanbanTaskListeners()
+export function getAllKanbanColumns(): Promise<KanbanColumn[]> {
+  return requestJson<KanbanColumn[]>('/kanban-columns')
 }
 
-export function subscribeToKanbanTasks(
-  listener: KanbanTaskListener,
-): () => void {
-  listeners.add(listener)
+export function getAllKanbanTasks(): Promise<KanbanTask[]> {
+  return requestJson<KanbanTask[]>('/kanban-tasks')
+}
 
-  return () => {
-    listeners.delete(listener)
+export function createKanbanTask(task: DraftKanbanTask): Promise<KanbanTask> {
+  return requestJson<KanbanTask>('/kanban-tasks', {
+    method: 'POST',
+    body: JSON.stringify(task),
+  })
+}
+
+export function updateKanbanTaskColumn(
+  taskId: KanbanTask['id'],
+  columnId: KanbanTaskColumnId,
+): Promise<KanbanTask> {
+  return requestJson<KanbanTask>(`/kanban-tasks/${taskId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ columnId }),
+  })
+}
+
+export async function deleteKanbanTask(
+  taskId: KanbanTask['id'],
+): Promise<void> {
+  const response = await fetch(`${apiBaseUrl}/kanban-tasks/${taskId}`, {
+    method: 'DELETE',
+  })
+
+  if (!response.ok) {
+    const result = (await response.json().catch(() => null)) as {
+      error?: string
+    } | null
+    throw new Error(result?.error ?? `Request failed with status ${response.status}.`)
   }
 }
