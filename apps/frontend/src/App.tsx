@@ -18,14 +18,8 @@ function App() {
   }, [])
 
 
-  async function addTicket(ticket: Ticket) {
-    const created = await TicketsService.createTicket({
-      title: ticket.title,
-      status: ticket.status,
-      priority: ticket.priority,
-      owner: ticket.owner,
-    })
-    setTickets((currentTickets) => [...currentTickets, created])
+  function addTicket(ticket: Ticket) {
+    setTickets((currentTickets) => [...currentTickets, ticket])
   }
 
   async function removeTicket(ticketId: number) {
