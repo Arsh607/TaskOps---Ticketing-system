@@ -3,6 +3,7 @@ import express, {
   type NextFunction,
   type Request,
   type Response,
+  type Express
 } from "express";
 import cors from "cors";
 
@@ -11,7 +12,7 @@ import ticketsRouter from "./api/tickets.js";
 import ticketUpdateRouter from "./routes/ticketUpdateRoutes.js";
 
 const port = Number(process.env.PORT ?? 3000);
-
+const app: Express = express();
 // Apply CORS before the routes.
 app.use(cors(corsOptions));
 
