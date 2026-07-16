@@ -34,6 +34,17 @@
   line-height: 1.5;
 }
 
+.kanban-board__status {
+  margin: 0 0 1rem;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.kanban-board__status--error {
+  color: #fca5a5;
+  font-weight: 700;
+}
+
 .kanban-board__form {
   display: grid;
   grid-template-columns: minmax(12rem, 1fr) minmax(8rem, 0.45fr) minmax(8rem, 0.45fr) auto;
@@ -89,6 +100,14 @@
 .kanban-board__form button:hover,
 .kanban-board__task-heading button:hover {
   background-color: #1d4ed8;
+}
+
+.kanban-board__form button:disabled,
+.kanban-board__task-heading button:disabled,
+.kanban-board select:disabled,
+.kanban-board input:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
 }
 
 .kanban-board__form-error {
@@ -191,6 +210,31 @@
   color: #94a3b8;
   font-size: 0.8rem;
   line-height: 1.35;
+}
+
+.kanban-board__task-column {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 0.65rem;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.kanban-board__task-column select {
+  min-width: 0;
+  width: 100%;
+  padding: 0.35rem 0.45rem;
+  color: var(--text);
+  background-color: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 0.4rem;
+  font: inherit;
+}
+
+.kanban-board__task-column select:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
 }
 
 .kanban-board__priority {

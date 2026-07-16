@@ -13,3 +13,28 @@ model Ticket {
   priority String
   owner    String
 }
+
+enum KanbanPriority {
+  High
+  Medium
+  Low
+}
+
+model KanbanColumn {
+  id          Int          @id
+  title       String       @unique
+  description String
+  tasks       KanbanTask[]
+}
+
+model KanbanTask {
+  id        Int            @id @default(autoincrement())
+  title     String
+  priority  KanbanPriority
+  columnId  Int
+  column    KanbanColumn   @relation(fields: [columnId], references: [id])
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([columnId])
+}

@@ -17,6 +17,7 @@ interface KanbanTaskFormProps {
   setDraftTask: Dispatch<SetStateAction<DraftKanbanTask>>;
   columns: KanbanColumnWithTasks[];
   validationError: string;
+  isDisabled: boolean;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }
 
@@ -25,6 +26,7 @@ function KanbanTaskForm({
   setDraftTask,
   columns,
   validationError,
+  isDisabled,
   onSubmit,
 }: KanbanTaskFormProps) {
   return (
@@ -35,6 +37,7 @@ function KanbanTaskForm({
           type="text"
           value={draftTask.title}
           placeholder="Enter a ticket task"
+          disabled={isDisabled}
           onChange={(event) =>
             setDraftTask((currentDraft) => ({
               ...currentDraft,
@@ -49,6 +52,7 @@ function KanbanTaskForm({
         Column
         <select
           value={draftTask.columnId}
+          disabled={isDisabled}
           onChange={(event) =>
             setDraftTask((currentDraft) => ({
               ...currentDraft,
@@ -68,6 +72,7 @@ function KanbanTaskForm({
         Priority
         <select
           value={draftTask.priority}
+          disabled={isDisabled}
           onChange={(event) =>
             setDraftTask((currentDraft) => ({
               ...currentDraft,
@@ -81,7 +86,7 @@ function KanbanTaskForm({
         </select>
       </label>
 
-      <button type="submit">Add task</button>
+      <button type="submit" disabled={isDisabled}>Add task</button>
       {validationError && (
         <p className="kanban-board__form-error">{validationError}</p>
       )}
@@ -101,8 +106,12 @@ export default function KanbanBoard() {
     columns,
     draftTask,
     validationError,
+    requestError,
+    isLoading,
+    isSaving,
     setDraftTask,
     addTask,
+    moveTask,
     removeTask,
   } = useKanbanTasks();
 
@@ -118,11 +127,23 @@ export default function KanbanBoard() {
         <p>Organize your project tickets by workflow stage and priority.</p>
       </header>
 
+      {isLoading && (
+        <p className="kanban-board__status" role="status">
+          Loading Kanban tasks...
+        </p>
+      )}
+      {requestError && (
+        <p className="kanban-board__status kanban-board__status--error" role="alert">
+          {requestError}
+        </p>
+      )}
+
       <KanbanTaskForm
         draftTask={draftTask}
         setDraftTask={setDraftTask}
         columns={columns}
         validationError={validationError}
+        isDisabled={isLoading || isSaving || columns.length === 0}
         onSubmit={handleAddTask}
       />
 
@@ -145,7 +166,8 @@ export default function KanbanBoard() {
                       <h4>{task.title}</h4>
                       <button
                         type="button"
-                        onClick={() => removeTask(task.id)}
+                        disabled={isSaving}
+                        onClick={() => void removeTask(task.id)}
                         aria-label={`Remove ${task.title}`}
                       >
                         Remove
@@ -159,6 +181,29 @@ export default function KanbanBoard() {
                         {task.priority}
                       </span>
                     </p>
+                    <label className="kanban-board__task-column">
+                      Move to
+                      <select
+                        value={task.columnId}
+                        disabled={isSaving}
+                        onChange={(event) =>
+                          void moveTask(
+                            task.id,
+                            Number(event.target.value) as KanbanTaskColumnId,
+                          )
+                        }
+                        aria-label={`Move ${task.title} to another column`}
+                      >
+                        {columns.map((availableColumn) => (
+                          <option
+                            key={availableColumn.id}
+                            value={availableColumn.id}
+                          >
+                            {availableColumn.title}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
                   </li>
                 ))}
               </ul>

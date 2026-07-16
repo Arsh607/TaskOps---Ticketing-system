@@ -1,9 +1,9 @@
 import {
   createKanbanTask,
   deleteKanbanTask,
+  getAllKanbanColumns,
   getAllKanbanTasks,
-  subscribeToKanbanTasks,
-  updateKanbanTask,
+  updateKanbanTaskColumn,
 } from '../repositories/kanbanTaskRepository'
 import type {
   DraftKanbanTask,
@@ -12,37 +12,8 @@ import type {
   KanbanTaskColumnId,
 } from '../types/KanbanTask'
 
-export const kanbanColumns: KanbanColumn[] = [
-  {
-    id: 1,
-    title: 'To Do',
-    description: 'Tasks that are ready to start.',
-  },
-  {
-    id: 2,
-    title: 'In Progress',
-    description: 'Tasks currently being worked on.',
-  },
-  {
-    id: 3,
-    title: 'Review',
-    description: 'Tasks waiting for review or QA.',
-  },
-  {
-    id: 4,
-    title: 'Done',
-    description: 'Tasks that have been completed.',
-  },
-]
-
 export interface KanbanColumnWithTasks extends KanbanColumn {
   tasks: KanbanTask[]
-}
-
-let kanbanColumnsWithTasksSnapshot: KanbanColumnWithTasks[] | undefined
-
-function clearKanbanColumnsWithTasksSnapshot(): void {
-  kanbanColumnsWithTasksSnapshot = undefined
 }
 
 export function getDefaultDraftKanbanTask(): DraftKanbanTask {
@@ -64,52 +35,51 @@ export function validateDraftKanbanTask(draftTask: DraftKanbanTask): string {
     return 'Task title must be at least 3 characters.'
   }
 
+  if (trimmedTitle.length > 120) {
+    return 'Task title must be 120 characters or fewer.'
+  }
+
   return ''
 }
 
-export function getKanbanColumnsWithTasks(): KanbanColumnWithTasks[] {
-  if (kanbanColumnsWithTasksSnapshot !== undefined) {
-    return kanbanColumnsWithTasksSnapshot
-  }
+export async function loadKanbanBoard(): Promise<{
+  columns: KanbanColumn[]
+  tasks: KanbanTask[]
+}> {
+  const [columns, tasks] = await Promise.all([
+    getAllKanbanColumns(),
+    getAllKanbanTasks(),
+  ])
 
-  const tasks = getAllKanbanTasks()
+  return { columns, tasks }
+}
 
-  kanbanColumnsWithTasksSnapshot = kanbanColumns.map((column) => ({
+export function groupKanbanTasks(
+  columns: KanbanColumn[],
+  tasks: KanbanTask[],
+): KanbanColumnWithTasks[] {
+  return columns.map((column) => ({
     ...column,
     tasks: tasks.filter((task) => task.columnId === column.id),
   }))
-
-  return kanbanColumnsWithTasksSnapshot
 }
 
-export function addKanbanTask(draftTask: DraftKanbanTask): KanbanTask {
-  const task: KanbanTask = {
-    id: Date.now(),
+export function addKanbanTask(
+  draftTask: DraftKanbanTask,
+): Promise<KanbanTask> {
+  return createKanbanTask({
+    ...draftTask,
     title: draftTask.title.trim(),
-    priority: draftTask.priority,
-    columnId: draftTask.columnId,
-  }
-
-  return createKanbanTask(task)
+  })
 }
 
 export function moveKanbanTask(
-  task: KanbanTask,
+  taskId: KanbanTask['id'],
   columnId: KanbanTaskColumnId,
-): KanbanTask | undefined {
-  return updateKanbanTask({
-    ...task,
-    columnId,
-  })
+): Promise<KanbanTask> {
+  return updateKanbanTaskColumn(taskId, columnId)
 }
 
-export function removeKanbanTask(taskId: number): void {
-  deleteKanbanTask(taskId)
-}
-
-export function subscribeToKanbanTaskChanges(listener: () => void): () => void {
-  return subscribeToKanbanTasks(() => {
-    clearKanbanColumnsWithTasksSnapshot()
-    listener()
-  })
+export function removeKanbanTask(taskId: KanbanTask['id']): Promise<void> {
+  return deleteKanbanTask(taskId)
 }
