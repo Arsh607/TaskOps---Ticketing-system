@@ -1,0 +1,17 @@
+.kanban-page {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.kanban-page > .shared-view-counter {
+  position: static;
+  justify-self: end;
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .kanban-page > .shared-view-counter {
+    width: 100%;
+    justify-self: stretch;
+  }
+}

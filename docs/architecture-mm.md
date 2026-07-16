@@ -1,95 +1,103 @@
-# KanbanTask Architecture
+# Kanban Resource Architecture
 
-This document explains how the KanbanTask feature is organized in the project.
+This document explains how the Kanban feature persists its state through the
+TaskOps frontend, backend, Prisma ORM, and PostgreSQL database.
 
-The data flow chain is:
+The complete data flow is:
 
+```text
 KanbanBoard
--> useKanbanTasks
--> kanbanTaskService
--> kanbanTaskRepository
--> kanbanTaskTestData
+  -> useKanbanTasks
+  -> frontend kanbanTaskService
+  -> frontend kanbanTaskRepository (fetch)
+  -> Express Kanban route
+  -> Zod validation middleware
+  -> kanbanTaskController
+  -> backend kanbanTaskService
+  -> Prisma Client
+  -> PostgreSQL
+```
 
-## KanbanTask Type
+The shared view counter is not part of this persistence work. The Kanban
+resource independently meets requirements I.1 through I.4.
 
-### What does this implementation do?
+## Backend Resource Endpoints
 
-The KanbanTask type file defines the shape of the Kanban task data. It includes the task id, title, priority, and column id. It also defines the column type and the draft task type used when creating a new task.
+The backend exposes only the routes needed by the Kanban UI:
 
-### How did I decide what logic to include there, and how does that separate concerns?
+| Method | Route | Purpose |
+| --- | --- | --- |
+| GET | `/api/kanban-columns` | Read the available workflow columns |
+| GET | `/api/kanban-tasks` | Read all persisted tasks |
+| POST | `/api/kanban-tasks` | Create a task |
+| PATCH | `/api/kanban-tasks/:taskId` | Update a task, including moving it |
+| DELETE | `/api/kanban-tasks/:taskId` | Remove a task |
 
-This file only contains TypeScript types and interfaces. It does not store data or change data. This keeps the data structure separate from the logic that uses it.
+Each route uses a Zod request schema through `validateRequest`. Invalid bodies,
+parameters, and query strings receive a `400` response before reaching a
+controller. Controllers handle HTTP concerns and call the backend service. The
+service contains data-access operations and sends them to PostgreSQL through
+the shared Prisma client.
 
-### Where is this implementation used in the project and how?
+Successful requests return `200`, `201`, or `204` as appropriate. Missing task
+IDs return `404`, and unexpected server errors are handled by the central error
+middleware.
 
-The repository, service, hook, and KanbanBoard component use these types so they all agree on what a KanbanTask looks like.
+## Database Schema and Migration
 
-## kanbanTaskTestData
+Prisma defines `KanbanColumn`, `KanbanTask`, and `KanbanPriority`. Each task has
+a foreign key to exactly one workflow column. Column titles and descriptions
+are stored once in `KanbanColumn` instead of being repeated in each task.
 
-### What does this implementation do?
+This design conforms to Third Normal Form:
 
-The kanbanTaskTestData file provides sample KanbanTask objects for the project. These tasks represent realistic TaskOps ticketing work and are assigned to the To Do, In Progress, Review, and Done columns.
+- Every table has a primary key.
+- Each field contains one atomic value.
+- Task fields depend on the task primary key.
+- Column descriptions depend on the column primary key.
+- Reusable column details are referenced through a foreign key rather than
+  duplicated in task rows.
 
-### How did I decide what logic to include there, and how does that separate concerns?
+Migration `20260716000000_add_kanban_resources` creates the enum, tables,
+indexes, relationship, four workflow columns, and initial Kanban task records.
 
-This file only contains test data. It does not contain business logic, React state, or UI code. This makes it easy to replace the test data later without changing the component.
+## Frontend Repository Uses the Backend
 
-### Where is this implementation used in the project and how?
+The frontend repository no longer imports `kanbanTaskTestData` or stores a
+mutable in-memory task list. Its methods send HTTP requests to the Kanban API.
+The API base URL can be configured with `VITE_API_URL` and defaults to
+`http://localhost:3000/api` for local development.
 
-The repository imports kanbanTaskTestData and uses it to initialize the in-memory task list.
+The service retains frontend business rules, such as trimming and validating
+task titles and grouping returned tasks into their workflow columns. The React
+hook owns loading, saving, request-error, form, column, and task state.
 
-## kanbanTaskRepository
+## Visible Application-State Persistence
 
-### What does this implementation do?
+When the Kanban page opens, the hook reads columns and tasks from the backend.
+Adding a task sends POST, moving it sends PATCH, and removing it sends DELETE.
+The UI uses the records returned by the backend to update its state.
 
-The kanbanTaskRepository stores the KanbanTask data in memory. It provides basic CRUD functions to get, create, update, and delete tasks. It also has a small subscription system so other parts of the app can be notified when the task data changes.
+The **Move to** selector is the visible read/update persistence example:
 
-### How did I decide what logic to include there, and how does that separate concerns?
+1. A user moves a task to a different workflow column.
+2. The repository sends PATCH with the new `columnId`.
+3. Prisma updates the corresponding PostgreSQL row.
+4. Refreshing or reopening the page sends GET again.
+5. The task remains in its updated column.
 
-The repository is responsible for storing and modifying data. It does not validate form input and it does not know about React components. This keeps data access separate from business rules and UI behavior.
+## Verification
 
-### Where is this implementation used in the project and how?
+Every Kanban route uses the validation middleware and an appropriate Zod
+schema before its controller runs. Verify the project from the repository root:
 
-The service calls the repository methods when it needs to read or change KanbanTask data. The repository uses test data now, but it could later be changed to request KanbanTask data from a backend service.
+```powershell
+npm run lint
+npm run build
+```
 
-## kanbanTaskService
+Apply the committed migrations to a configured database with:
 
-### What does this implementation do?
-
-The kanbanTaskService contains the business logic for KanbanTask. It defines the four Kanban columns, validates draft task titles, groups tasks into columns, creates new tasks, moves tasks, removes tasks, and exposes task change subscriptions.
-
-### How did I decide what logic to include there, and how does that separate concerns?
-
-The service contains rules about how Kanban tasks should work. For example, it checks that task titles are not empty and are at least three characters long. This logic belongs in the service because it is not just a UI detail and should not be mixed into the component.
-
-### Where is this implementation used in the project and how?
-
-The useKanbanTasks hook calls the service to get grouped columns, validate new tasks, add tasks, remove tasks, and subscribe to task changes.
-
-## useKanbanTasks
-
-### What does this implementation do?
-
-The useKanbanTasks hook connects React to the KanbanTask service. It uses useSyncExternalStore to update the UI when repository data changes. It also stores the draft task form state and the current validation error.
-
-### How did I decide what logic to include there, and how does that separate concerns?
-
-The hook contains React interaction state. This includes form state, validation message state, and UI actions like addTask and removeTask. It calls the service instead of directly changing repository data, so React logic stays separate from business logic.
-
-### Where is this implementation used in the project and how?
-
-The KanbanBoard component calls useKanbanTasks to get the columns, draft task, validation error, and task actions it needs to render the board.
-
-## KanbanBoard Component
-
-### What does this implementation do?
-
-The KanbanBoard component renders the Kanban board UI. It displays columns, shows tasks inside each column, lets the user add a task, lets the user remove a task, and displays validation errors.
-
-### How did I decide what logic to include there, and how does that separate concerns?
-
-The component only handles rendering and form events. It does not define test data, store the main task list, or validate task titles directly. Those responsibilities are handled by the hook, service, and repository.
-
-### Where is this implementation used in the project and how?
-
-The KanbanBoard component is used in the app UI to show the Kanban feature. It starts the architecture chain by calling useKanbanTasks, which then calls the service, which then calls the repository, which starts from kanbanTaskTestData.
+```powershell
+npx prisma migrate deploy
+```

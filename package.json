@@ -3,33 +3,34 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "workspaces": [
+    "apps/frontend",
+    "apps/backend"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "dev": "npm run dev -w @taskops/frontend",
+    "dev:frontend": "npm run dev -w @taskops/frontend",
+    "dev:backend": "npm run dev -w @taskops/backend",
+    "build": "npm run build --workspaces",
     "lint": "eslint .",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
-    "react-router-dom": "^7.15.1"
+    "preview": "npm run preview -w @taskops/frontend",
+    "start:backend": "npm run start -w @taskops/backend"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.0",
     "@eslint/js": "^10.0.1",
-    "@rolldown/plugin-babel": "^0.2.3",
-    "@types/babel__core": "^7.20.5",
-    "@types/node": "^24.12.3",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.1",
-    "babel-plugin-react-compiler": "^1.0.0",
+    "@types/node": "^26.1.1",
+    "dotenv": "^17.4.2",
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
+    "prisma": "^7.8.0",
     "typescript": "~6.0.2",
-    "typescript-eslint": "^8.59.2",
-    "vite": "^8.0.12"
+    "typescript-eslint": "^8.59.2"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "pg": "^8.22.0",
+    "zod": "^4.4.3"
   }
 }
