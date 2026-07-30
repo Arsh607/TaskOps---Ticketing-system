@@ -3,6 +3,7 @@ import express, { type Request, type Response } from 'express';
 import ticketsRouter from './api/tickets.js';
 import { corsOptions } from './config/cors.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import ticketUpdateRouter from './routes/ticketUpdateRoutes.js';
 import {
   kanbanColumnRouter,
   kanbanTaskRouter,
@@ -18,6 +19,7 @@ app.get('/health', (_request: Request, response: Response) => {
 });
 
 app.use('/tickets', ticketsRouter);
+app.use('/api', ticketUpdateRouter);
 app.use('/api/kanban-columns', kanbanColumnRouter);
 app.use('/api/kanban-tasks', kanbanTaskRouter);
 app.use(errorHandler);
