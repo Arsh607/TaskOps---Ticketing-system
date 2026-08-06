@@ -1,10 +1,23 @@
-import type { NextFunction, Request, Response } from "express";
+import { getAuth } from "@clerk/express";
+import type {
+  NextFunction,
+  Request,
+  Response,
+} from "express";
+
 import {
   createTicketUpdate,
   deleteTicketUpdate,
-  getUpdatesByTicketId,
+  getUpdatesByClerkUserId,
+  getUserScopedUpdatesByTicketId,
   updateTicketUpdate,
 } from "../services/ticketUpdateService.js";
+
+function getAuthenticatedUserId(request: Request): string | null {
+  const { userId } = getAuth(request);
+
+  return userId ?? null;
+}
 
 export async function getTicketUpdatesController(
   request: Request,
@@ -12,8 +25,44 @@ export async function getTicketUpdatesController(
   next: NextFunction,
 ): Promise<void> {
   try {
+    const userId = getAuthenticatedUserId(request);
+
+    if (!userId) {
+      response.status(401).json({
+        error: "Authentication required.",
+      });
+      return;
+    }
+
     const ticketId = Number(request.params.ticketId);
-    const updates = await getUpdatesByTicketId(ticketId);
+
+    const updates = await getUserScopedUpdatesByTicketId(
+      ticketId,
+      userId,
+    );
+
+    response.status(200).json(updates);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getMyTicketUpdatesController(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const userId = getAuthenticatedUserId(request);
+
+    if (!userId) {
+      response.status(401).json({
+        error: "Authentication required.",
+      });
+      return;
+    }
+
+    const updates = await getUpdatesByClerkUserId(userId);
 
     response.status(200).json(updates);
   } catch (error) {
@@ -27,7 +76,19 @@ export async function createTicketUpdateController(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const createdUpdate = await createTicketUpdate(request.body);
+    const userId = getAuthenticatedUserId(request);
+
+    if (!userId) {
+      response.status(401).json({
+        error: "Authentication required.",
+      });
+      return;
+    }
+
+    const createdUpdate = await createTicketUpdate(
+      request.body,
+      userId,
+    );
 
     response.status(201).json(createdUpdate);
   } catch (error) {
@@ -41,16 +102,27 @@ export async function updateTicketUpdateController(
   next: NextFunction,
 ): Promise<void> {
   try {
+    const userId = getAuthenticatedUserId(request);
+
+    if (!userId) {
+      response.status(401).json({
+        error: "Authentication required.",
+      });
+      return;
+    }
+
     const updateId = Number(request.params.updateId);
 
     const updatedRecord = await updateTicketUpdate(
       updateId,
       request.body,
+      userId,
     );
 
     if (!updatedRecord) {
       response.status(404).json({
-        error: "Ticket update not found.",
+        error:
+          "Ticket update was not found or does not belong to this user.",
       });
       return;
     }
@@ -67,12 +139,26 @@ export async function deleteTicketUpdateController(
   next: NextFunction,
 ): Promise<void> {
   try {
+    const userId = getAuthenticatedUserId(request);
+
+    if (!userId) {
+      response.status(401).json({
+        error: "Authentication required.",
+      });
+      return;
+    }
+
     const updateId = Number(request.params.updateId);
-    const deletedRecord = await deleteTicketUpdate(updateId);
+
+    const deletedRecord = await deleteTicketUpdate(
+      updateId,
+      userId,
+    );
 
     if (!deletedRecord) {
       response.status(404).json({
-        error: "Ticket update not found.",
+        error:
+          "Ticket update was not found or does not belong to this user.",
       });
       return;
     }

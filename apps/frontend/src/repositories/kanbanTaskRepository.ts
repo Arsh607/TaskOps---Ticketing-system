@@ -4,11 +4,20 @@ import type {
   KanbanTask,
   KanbanTaskColumnId,
 } from '../types/KanbanTask'
+import {
+  authenticatedFetch,
+  type GetToken,
+} from '../lib/authenticatedFetch'
 
-const apiBaseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api'
+const apiRootUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000'
+const apiBaseUrl = `${apiRootUrl}/api`
 
-async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${apiBaseUrl}${path}`, {
+async function requestJson<T>(
+  path: string,
+  getToken: GetToken,
+  init?: RequestInit,
+): Promise<T> {
+  const response = await authenticatedFetch(`${apiBaseUrl}${path}`, getToken, {
     ...init,
     headers: init?.body
       ? { 'Content-Type': 'application/json', ...init.headers }
@@ -25,16 +34,19 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>
 }
 
-export function getAllKanbanColumns(): Promise<KanbanColumn[]> {
-  return requestJson<KanbanColumn[]>('/kanban-columns')
+export function getAllKanbanColumns(getToken: GetToken): Promise<KanbanColumn[]> {
+  return requestJson<KanbanColumn[]>('/kanban-columns', getToken)
 }
 
-export function getAllKanbanTasks(): Promise<KanbanTask[]> {
-  return requestJson<KanbanTask[]>('/kanban-tasks')
+export function getAllKanbanTasks(getToken: GetToken): Promise<KanbanTask[]> {
+  return requestJson<KanbanTask[]>('/kanban-tasks', getToken)
 }
 
-export function createKanbanTask(task: DraftKanbanTask): Promise<KanbanTask> {
-  return requestJson<KanbanTask>('/kanban-tasks', {
+export function createKanbanTask(
+  task: DraftKanbanTask,
+  getToken: GetToken,
+): Promise<KanbanTask> {
+  return requestJson<KanbanTask>('/kanban-tasks', getToken, {
     method: 'POST',
     body: JSON.stringify(task),
   })
@@ -43,8 +55,9 @@ export function createKanbanTask(task: DraftKanbanTask): Promise<KanbanTask> {
 export function updateKanbanTaskColumn(
   taskId: KanbanTask['id'],
   columnId: KanbanTaskColumnId,
+  getToken: GetToken,
 ): Promise<KanbanTask> {
-  return requestJson<KanbanTask>(`/kanban-tasks/${taskId}`, {
+  return requestJson<KanbanTask>(`/kanban-tasks/${taskId}`, getToken, {
     method: 'PATCH',
     body: JSON.stringify({ columnId }),
   })
@@ -52,10 +65,13 @@ export function updateKanbanTaskColumn(
 
 export async function deleteKanbanTask(
   taskId: KanbanTask['id'],
+  getToken: GetToken,
 ): Promise<void> {
-  const response = await fetch(`${apiBaseUrl}/kanban-tasks/${taskId}`, {
-    method: 'DELETE',
-  })
+  const response = await authenticatedFetch(
+    `${apiBaseUrl}/kanban-tasks/${taskId}`,
+    getToken,
+    { method: 'DELETE' },
+  )
 
   if (!response.ok) {
     const result = (await response.json().catch(() => null)) as {

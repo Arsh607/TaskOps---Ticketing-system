@@ -1,6 +1,7 @@
 import type { CorsOptions } from "cors";
 
 const localFrontendUrl = "http://localhost:5173";
+const localhostWithPortPattern = /^http:\/\/localhost:\d+$/;
 
 const allowedOrigins = [
   process.env.FRONTEND_URL,
@@ -10,6 +11,11 @@ const allowedOrigins = [
 export const corsOptions: CorsOptions = {
   origin(origin, callback) {
     if (!origin) {
+      callback(null, true);
+      return;
+    }
+
+    if (localhostWithPortPattern.test(origin)) {
       callback(null, true);
       return;
     }

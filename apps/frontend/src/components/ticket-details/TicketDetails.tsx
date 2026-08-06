@@ -1,5 +1,9 @@
 import "./TicketDetails.css";
+import { useAuth } from "@clerk/react";
+import { useEffect, useState } from "react";
 import { useTicketUpdates } from "../../hooks/useTicketUpdates";
+import TicketsService from "../../services/TicketsService";
+import type { Ticket } from "../../types/Ticket";
 
 /*
   TicketDetails uses useTicketUpdates for presentation state.
@@ -8,21 +12,42 @@ import { useTicketUpdates } from "../../hooks/useTicketUpdates";
   ticket updates in PostgreSQL.
 */
 function TicketDetails() {
-  const ticket = {
-    id: 1,
-    displayId: "TKT-1042",
-    title: "User cannot access dashboard",
-    status: "Open",
-    priority: "High",
-    owner: "Aashish",
-    assignmentGroup: "Application Support",
-    createdDate: "May 18, 2026",
-    updatedDate: "May 19, 2026",
-    description:
-      "The user is unable to access the dashboard after logging into the application.",
-    impact:
-      "This issue prevents the user from viewing assigned tickets, notifications, and task updates.",
-  };
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const [ticketLoadError, setTicketLoadError] = useState("");
+
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) {
+      return;
+    }
+
+    let ignoreResult = false;
+
+    async function loadFirstTicket() {
+      try {
+        const tickets = await TicketsService.fetchAll(getToken);
+
+        if (!ignoreResult) {
+          setSelectedTicket(tickets[0] ?? null);
+          setTicketLoadError("");
+        }
+      } catch (error) {
+        if (!ignoreResult) {
+          setTicketLoadError(
+            error instanceof Error
+              ? error.message
+              : "Unable to load tickets for details.",
+          );
+        }
+      }
+    }
+
+    void loadFirstTicket();
+
+    return () => {
+      ignoreResult = true;
+    };
+  }, [getToken, isLoaded, isSignedIn]);
 
   const {
     updates,
@@ -32,63 +57,79 @@ function TicketDetails() {
     isLoading,
     handleAddUpdate,
     handleRemoveUpdate,
-  } = useTicketUpdates(ticket.id);
+  } = useTicketUpdates(selectedTicket?.id ?? null);
+
+  const displayId = selectedTicket
+    ? `TKT-${selectedTicket.id.toString().padStart(4, "0")}`
+    : "No ticket selected";
 
   return (
     <section className="ticket-details">
       <header className="ticket-details__header">
-        <p className="ticket-details__id">{ticket.displayId}</p>
-        <h2>{ticket.title}</h2>
+        <p className="ticket-details__id">{displayId}</p>
+        <h2>{selectedTicket?.title ?? "Ticket details"}</h2>
         <p>
           Review ticket information, ownership, impact, and progress
           updates.
         </p>
+        {ticketLoadError && (
+          <p className="ticket-details__error" role="alert">
+            {ticketLoadError}
+          </p>
+        )}
       </header>
 
       <article className="ticket-details__card">
+        <p className="ticket-details__id">{displayId}</p>
         <h3>Ticket Overview</h3>
 
         <dl className="ticket-details__grid">
           <div>
             <dt>Status</dt>
-            <dd>{ticket.status}</dd>
+            <dd>{selectedTicket?.status ?? "-"}</dd>
           </div>
 
           <div>
             <dt>Priority</dt>
-            <dd>{ticket.priority}</dd>
+            <dd>{selectedTicket?.priority ?? "-"}</dd>
           </div>
 
           <div>
             <dt>Owner</dt>
-            <dd>{ticket.owner}</dd>
+            <dd>{selectedTicket?.owner ?? "-"}</dd>
           </div>
 
           <div>
             <dt>Assignment Group</dt>
-            <dd>{ticket.assignmentGroup}</dd>
+            <dd>Application Support</dd>
           </div>
 
           <div>
             <dt>Created</dt>
-            <dd>{ticket.createdDate}</dd>
+            <dd>Available in backend resource data</dd>
           </div>
 
           <div>
             <dt>Updated</dt>
-            <dd>{ticket.updatedDate}</dd>
+            <dd>Available in backend resource data</dd>
           </div>
         </dl>
       </article>
 
       <article className="ticket-details__card">
         <h3>Description</h3>
-        <p>{ticket.description}</p>
+        <p>
+          Detailed issue description is managed separately. This view focuses on
+          persisted update history for the selected ticket.
+        </p>
       </article>
 
       <article className="ticket-details__card">
         <h3>Impact</h3>
-        <p>{ticket.impact}</p>
+        <p>
+          Ticket updates are associated with the logged-in user and stored in
+          PostgreSQL through the backend API.
+        </p>
       </article>
 
       <article className="ticket-details__card">
@@ -98,7 +139,7 @@ function TicketDetails() {
           className="ticket-details__form"
           onSubmit={(event) => {
             event.preventDefault();
-            void handleAddUpdate("Arshdeep");
+            void handleAddUpdate(selectedTicket?.owner ?? "Unknown");
           }}
         >
           <label htmlFor="ticket-update">Update message</label>
@@ -108,6 +149,7 @@ function TicketDetails() {
             value={newUpdate}
             onChange={(event) => setNewUpdate(event.target.value)}
             placeholder="Enter a new update for this ticket..."
+            disabled={!selectedTicket}
           />
 
           {errorMessage && (
@@ -116,7 +158,9 @@ function TicketDetails() {
             </p>
           )}
 
-          <button type="submit">Add Update</button>
+          <button type="submit" disabled={!selectedTicket}>
+            Add Update
+          </button>
         </form>
       </article>
 

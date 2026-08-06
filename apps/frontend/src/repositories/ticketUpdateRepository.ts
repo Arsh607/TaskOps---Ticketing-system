@@ -1,8 +1,14 @@
+import {
+  authenticatedFetch,
+  type GetToken,
+} from "../lib/authenticatedFetch";
+
 export interface TicketUpdate {
   id: number;
   ticketId: number;
   message: string;
   createdBy: string;
+  clerkUserId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -16,7 +22,9 @@ export interface CreateTicketUpdateInput {
 const API_URL =
   import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
-async function parseResponse<T>(response: Response): Promise<T> {
+async function parseResponse<T>(
+  response: Response,
+): Promise<T> {
   if (!response.ok) {
     const errorBody = await response
       .json()
@@ -35,9 +43,22 @@ async function parseResponse<T>(response: Response): Promise<T> {
 
 export async function getTicketUpdates(
   ticketId: number,
+  getToken: GetToken,
 ): Promise<TicketUpdate[]> {
-  const response = await fetch(
+  const response = await authenticatedFetch(
     `${API_URL}/api/tickets/${ticketId}/updates`,
+    getToken,
+  );
+
+  return parseResponse<TicketUpdate[]>(response);
+}
+
+export async function getMyTicketUpdates(
+  getToken: GetToken,
+): Promise<TicketUpdate[]> {
+  const response = await authenticatedFetch(
+    `${API_URL}/api/my-ticket-updates`,
+    getToken,
   );
 
   return parseResponse<TicketUpdate[]>(response);
@@ -45,14 +66,21 @@ export async function getTicketUpdates(
 
 export async function createTicketUpdate(
   input: CreateTicketUpdateInput,
+  getToken: GetToken,
 ): Promise<TicketUpdate> {
-  const response = await fetch(`${API_URL}/api/ticket-updates`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await authenticatedFetch(
+    `${API_URL}/api/ticket-updates`,
+    getToken,
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+      },
+
+      body: JSON.stringify(input),
     },
-    body: JSON.stringify(input),
-  });
+  );
 
   return parseResponse<TicketUpdate>(response);
 }
@@ -60,15 +88,21 @@ export async function createTicketUpdate(
 export async function updateTicketUpdate(
   updateId: number,
   message: string,
+  getToken: GetToken,
 ): Promise<TicketUpdate> {
-  const response = await fetch(
+  const response = await authenticatedFetch(
     `${API_URL}/api/ticket-updates/${updateId}`,
+    getToken,
     {
       method: "PATCH",
+
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ message }),
+
+      body: JSON.stringify({
+        message,
+      }),
     },
   );
 
@@ -77,17 +111,26 @@ export async function updateTicketUpdate(
 
 export async function deleteTicketUpdate(
   updateId: number,
+  getToken: GetToken,
 ): Promise<void> {
-  const response = await fetch(
+  const response = await authenticatedFetch(
     `${API_URL}/api/ticket-updates/${updateId}`,
+    getToken,
     {
       method: "DELETE",
     },
   );
 
   if (!response.ok) {
+    const errorBody = await response
+      .json()
+      .catch(() => ({
+        error: `Delete failed with status ${response.status}.`,
+      }));
+
     throw new Error(
-      `Delete request failed with status ${response.status}.`,
+      errorBody.error ??
+        `Delete failed with status ${response.status}.`,
     );
   }
 }

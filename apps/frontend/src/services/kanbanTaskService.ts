@@ -11,6 +11,7 @@ import type {
   KanbanTask,
   KanbanTaskColumnId,
 } from '../types/KanbanTask'
+import type { GetToken } from '../lib/authenticatedFetch'
 
 export interface KanbanColumnWithTasks extends KanbanColumn {
   tasks: KanbanTask[]
@@ -42,13 +43,13 @@ export function validateDraftKanbanTask(draftTask: DraftKanbanTask): string {
   return ''
 }
 
-export async function loadKanbanBoard(): Promise<{
+export async function loadKanbanBoard(getToken: GetToken): Promise<{
   columns: KanbanColumn[]
   tasks: KanbanTask[]
 }> {
   const [columns, tasks] = await Promise.all([
-    getAllKanbanColumns(),
-    getAllKanbanTasks(),
+    getAllKanbanColumns(getToken),
+    getAllKanbanTasks(getToken),
   ])
 
   return { columns, tasks }
@@ -66,20 +67,25 @@ export function groupKanbanTasks(
 
 export function addKanbanTask(
   draftTask: DraftKanbanTask,
+  getToken: GetToken,
 ): Promise<KanbanTask> {
   return createKanbanTask({
     ...draftTask,
     title: draftTask.title.trim(),
-  })
+  }, getToken)
 }
 
 export function moveKanbanTask(
   taskId: KanbanTask['id'],
   columnId: KanbanTaskColumnId,
+  getToken: GetToken,
 ): Promise<KanbanTask> {
-  return updateKanbanTaskColumn(taskId, columnId)
+  return updateKanbanTaskColumn(taskId, columnId, getToken)
 }
 
-export function removeKanbanTask(taskId: KanbanTask['id']): Promise<void> {
-  return deleteKanbanTask(taskId)
+export function removeKanbanTask(
+  taskId: KanbanTask['id'],
+  getToken: GetToken,
+): Promise<void> {
+  return deleteKanbanTask(taskId, getToken)
 }
