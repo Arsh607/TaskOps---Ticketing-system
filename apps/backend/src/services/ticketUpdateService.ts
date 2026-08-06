@@ -1,74 +1,135 @@
 import { prisma } from "../lib/prisma.js";
-import { appUserService } from "./appUserService.js";
+
 import type {
   CreateTicketUpdateInput,
   UpdateTicketUpdateInput,
 } from "../schemas/ticketUpdateSchemas.js";
 
-export async function getUpdatesByTicketId(ticketId: number) {
-  return prisma.ticketUpdate.findMany({
-    where: { ticketId },
-    orderBy: { createdAt: "desc" },
-  });
-}
+const ticketUpdateSelect = {
+  id: true,
+  ticketId: true,
+  message: true,
+  createdBy: true,
+  clerkUserId: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
 
-export async function getTicketUpdateById(updateId: number) {
-  return prisma.ticketUpdate.findUnique({
-    where: { id: updateId },
-  });
-}
+export const ticketUpdateService = {
+  getUpdatesByTicketId(ticketId: number) {
+    return prisma.ticketUpdate.findMany({
+      where: {
+        ticketId,
+      },
+      select: ticketUpdateSelect,
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  },
 
-export async function createTicketUpdate(
-  input: CreateTicketUpdateInput,
-  clerkUserId: string,
-) {
-  const existingTicket = await prisma.ticket.findUnique({
-    where: { id: input.ticketId },
-    select: { id: true },
-  });
+  getUpdatesByClerkUserId(clerkUserId: string) {
+    return prisma.ticketUpdate.findMany({
+      where: {
+        clerkUserId,
+      },
+      select: ticketUpdateSelect,
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  },
 
-  if (!existingTicket) {
-    return null;
-  }
+  getTicketUpdateById(updateId: number) {
+    return prisma.ticketUpdate.findUnique({
+      where: {
+        id: updateId,
+      },
+      select: ticketUpdateSelect,
+    });
+  },
 
-  const appUser = await appUserService.upsertByClerkUserId(clerkUserId);
+  async createTicketUpdate(
+    input: CreateTicketUpdateInput,
+    clerkUserId: string,
+  ) {
+    // Ensure the authenticated Clerk user exists in the application database.
+    await prisma.appUser.upsert({
+      where: {
+        clerkUserId,
+      },
+      update: {},
+      create: {
+        clerkUserId,
+      },
+    });
 
-  return prisma.ticketUpdate.create({
-    data: {
-      ticketId: input.ticketId,
-      message: input.message,
-      createdBy: input.createdBy,
-      appUserId: appUser.id,
-    },
-  });
-}
+    // Create the update and associate it with the authenticated user.
+    return prisma.ticketUpdate.create({
+      data: {
+        ticketId: input.ticketId,
+        message: input.message,
+        createdBy: input.createdBy,
+        clerkUserId,
+      },
+      select: ticketUpdateSelect,
+    });
+  },
 
-export async function updateTicketUpdate(
-  updateId: number,
-  input: UpdateTicketUpdateInput,
-) {
-  const existingUpdate = await getTicketUpdateById(updateId);
+  async updateTicketUpdate(
+    updateId: number,
+    input: UpdateTicketUpdateInput,
+    clerkUserId: string,
+  ) {
+    const existingUpdate = await prisma.ticketUpdate.findFirst({
+      where: {
+        id: updateId,
+        clerkUserId,
+      },
+      select: {
+        id: true,
+      },
+    });
 
-  if (!existingUpdate) {
-    return null;
-  }
+    if (!existingUpdate) {
+      return null;
+    }
 
-  return prisma.ticketUpdate.update({
-    where: { id: updateId },
-    data: {
-      message: input.message,
-    },
-  });
-}
+    return prisma.ticketUpdate.update({
+      where: {
+        id: updateId,
+      },
+      data: {
+        message: input.message,
+      },
+      select: ticketUpdateSelect,
+    });
+  },
 
-export async function deleteTicketUpdate(updateId: number) {
-  const existingUpdate = await getTicketUpdateById(updateId);
+  async deleteTicketUpdate(
+    updateId: number,
+    clerkUserId: string,
+  ) {
+    const existingUpdate = await prisma.ticketUpdate.findFirst({
+      where: {
+        id: updateId,
+        clerkUserId,
+      },
+      select: {
+        id: true,
+      },
+    });
 
-  if (!existingUpdate) {
-    return null;
-  }
+    if (!existingUpdate) {
+      return false;
+    }
 
-  return prisma.ticketUpdate.delete({
-    where: { id: updateId },
-  });
-}
+    await prisma.ticketUpdate.delete({
+      where: {
+        id: updateId,
+      },
+    });
+
+    return true;
+  },
+};

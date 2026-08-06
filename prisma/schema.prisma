@@ -17,27 +17,28 @@ model Ticket {
 }
 
 model TicketUpdate {
-  id        Int      @id @default(autoincrement())
-  ticketId  Int
-  message   String
-  createdBy String
-  appUserId Int?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  ticketId    Int
+  message     String
+  createdBy   String
+  clerkUserId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   ticket  Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  appUser AppUser? @relation(fields: [appUserId], references: [id], onDelete: SetNull)
+  appUser AppUser? @relation(fields: [clerkUserId], references: [clerkUserId], onDelete: SetNull)
 
   @@index([ticketId])
-  @@index([appUserId])
+  @@index([clerkUserId])
 }
 
 model AppUser {
-  id          Int            @id @default(autoincrement())
-  clerkUserId String         @unique
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  updates     TicketUpdate[]
+  id          Int      @id @default(autoincrement())
+  clerkUserId String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  updates TicketUpdate[]
 }
 
 enum KanbanPriority {

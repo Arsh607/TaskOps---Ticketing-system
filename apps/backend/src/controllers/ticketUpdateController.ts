@@ -1,11 +1,17 @@
-import type { NextFunction, Request, Response } from "express";
 import { getAuth } from "@clerk/express";
-import {
-  createTicketUpdate,
-  deleteTicketUpdate,
-  getUpdatesByTicketId,
-  updateTicketUpdate,
-} from "../services/ticketUpdateService.js";
+import type {
+  NextFunction,
+  Request,
+  Response,
+} from "express";
+
+import { ticketUpdateService } from "../services/ticketUpdateService.js";
+
+function getAuthenticatedUserId(request: Request): string | null {
+  const { userId } = getAuth(request);
+
+  return userId ?? null;
+}
 
 export async function getTicketUpdatesController(
   request: Request,
@@ -14,7 +20,35 @@ export async function getTicketUpdatesController(
 ): Promise<void> {
   try {
     const ticketId = Number(request.params.ticketId);
-    const updates = await getUpdatesByTicketId(ticketId);
+
+    const updates =
+      await ticketUpdateService.getUpdatesByTicketId(ticketId);
+
+    response.status(200).json(updates);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getMyTicketUpdatesController(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const clerkUserId = getAuthenticatedUserId(request);
+
+    if (!clerkUserId) {
+      response.status(401).json({
+        error: "Authentication required.",
+      });
+      return;
+    }
+
+    const updates =
+      await ticketUpdateService.getUpdatesByClerkUserId(
+        clerkUserId,
+      );
 
     response.status(200).json(updates);
   } catch (error) {
@@ -28,19 +62,20 @@ export async function createTicketUpdateController(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const { userId } = getAuth(request);
+    const clerkUserId = getAuthenticatedUserId(request);
 
-    if (!userId) {
-      response.status(401).json({ error: "Unauthorized." });
+    if (!clerkUserId) {
+      response.status(401).json({
+        error: "Authentication required.",
+      });
       return;
     }
 
-    const createdUpdate = await createTicketUpdate(request.body, userId);
-
-    if (!createdUpdate) {
-      response.status(404).json({ error: "Ticket not found." });
-      return;
-    }
+    const createdUpdate =
+      await ticketUpdateService.createTicketUpdate(
+        request.body,
+        clerkUserId,
+      );
 
     response.status(201).json(createdUpdate);
   } catch (error) {
@@ -54,16 +89,28 @@ export async function updateTicketUpdateController(
   next: NextFunction,
 ): Promise<void> {
   try {
+    const clerkUserId = getAuthenticatedUserId(request);
+
+    if (!clerkUserId) {
+      response.status(401).json({
+        error: "Authentication required.",
+      });
+      return;
+    }
+
     const updateId = Number(request.params.updateId);
 
-    const updatedRecord = await updateTicketUpdate(
-      updateId,
-      request.body,
-    );
+    const updatedRecord =
+      await ticketUpdateService.updateTicketUpdate(
+        updateId,
+        request.body,
+        clerkUserId,
+      );
 
     if (!updatedRecord) {
       response.status(404).json({
-        error: "Ticket update not found.",
+        error:
+          "Ticket update was not found or does not belong to this user.",
       });
       return;
     }
@@ -80,12 +127,27 @@ export async function deleteTicketUpdateController(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const updateId = Number(request.params.updateId);
-    const deletedRecord = await deleteTicketUpdate(updateId);
+    const clerkUserId = getAuthenticatedUserId(request);
 
-    if (!deletedRecord) {
+    if (!clerkUserId) {
+      response.status(401).json({
+        error: "Authentication required.",
+      });
+      return;
+    }
+
+    const updateId = Number(request.params.updateId);
+
+    const wasDeleted =
+      await ticketUpdateService.deleteTicketUpdate(
+        updateId,
+        clerkUserId,
+      );
+
+    if (!wasDeleted) {
       response.status(404).json({
-        error: "Ticket update not found.",
+        error:
+          "Ticket update was not found or does not belong to this user.",
       });
       return;
     }

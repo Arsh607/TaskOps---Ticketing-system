@@ -8,7 +8,7 @@ export interface TicketUpdate {
   ticketId: number;
   message: string;
   createdBy: string;
-  appUserId?: number | null;
+  clerkUserId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -20,9 +20,11 @@ export interface CreateTicketUpdateInput {
 }
 
 const API_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000";
+  import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
-async function parseResponse<T>(response: Response): Promise<T> {
+async function parseResponse<T>(
+  response: Response,
+): Promise<T> {
   if (!response.ok) {
     const errorBody = await response
       .json()
@@ -51,6 +53,17 @@ export async function getTicketUpdates(
   return parseResponse<TicketUpdate[]>(response);
 }
 
+export async function getMyTicketUpdates(
+  getToken: GetToken,
+): Promise<TicketUpdate[]> {
+  const response = await authenticatedFetch(
+    `${API_URL}/api/my-ticket-updates`,
+    getToken,
+  );
+
+  return parseResponse<TicketUpdate[]>(response);
+}
+
 export async function createTicketUpdate(
   input: CreateTicketUpdateInput,
   getToken: GetToken,
@@ -60,9 +73,11 @@ export async function createTicketUpdate(
     getToken,
     {
       method: "POST",
+
       headers: {
         "Content-Type": "application/json",
       },
+
       body: JSON.stringify(input),
     },
   );
@@ -80,10 +95,14 @@ export async function updateTicketUpdate(
     getToken,
     {
       method: "PATCH",
+
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ message }),
+
+      body: JSON.stringify({
+        message,
+      }),
     },
   );
 
@@ -103,8 +122,15 @@ export async function deleteTicketUpdate(
   );
 
   if (!response.ok) {
+    const errorBody = await response
+      .json()
+      .catch(() => ({
+        error: `Delete failed with status ${response.status}.`,
+      }));
+
     throw new Error(
-      `Delete request failed with status ${response.status}.`,
+      errorBody.error ??
+        `Delete failed with status ${response.status}.`,
     );
   }
 }
