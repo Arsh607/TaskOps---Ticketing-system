@@ -113,7 +113,20 @@ VITE_API_BASE_URL=http://localhost:3000
 VITE_API_URL=http://localhost:3000
 VITE_CLERK_PUBLISHABLE_KEY=<your-clerk-publishable-key>
 ```
+### Frontend (.env)
 
+Create a `.env` file inside:
+
+```
+apps/backend/
+```
+
+Add the following variables:
+
+```env
+CLERK_PUBLISHABLE_KEY=<your-clerk-publishable-key>
+CLERK_SECRET_KEY=<your-clerk-secret-key>
+```
 ---
 
 ## Database Setup
