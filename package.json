@@ -14,7 +14,9 @@
     "build": "npm run build --workspaces",
     "lint": "eslint .",
     "preview": "npm run preview -w @taskops/frontend",
-    "start:backend": "npm run start -w @taskops/backend"
+    "start:backend": "npm run start -w @taskops/backend",
+    "build:backend": "npm run build -w @taskops/backend",
+    "vercel-build": "npx prisma generate && npx prisma migrate deploy && npm run build:backend"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

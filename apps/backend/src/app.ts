@@ -30,3 +30,5 @@ app.use('/api/users', userRouter);
 app.use('/api/kanban-columns', kanbanColumnRouter);
 app.use('/api/kanban-tasks', kanbanTaskRouter);
 app.use(errorHandler);
+
+export default app;
