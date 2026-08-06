@@ -5,7 +5,13 @@ import type {
   Response,
 } from "express";
 
-import { ticketUpdateService } from "../services/ticketUpdateService.js";
+import {
+  createTicketUpdate,
+  deleteTicketUpdate,
+  getUpdatesByClerkUserId,
+  getUserScopedUpdatesByTicketId,
+  updateTicketUpdate,
+} from "../services/ticketUpdateService.js";
 
 function getAuthenticatedUserId(request: Request): string | null {
   const { userId } = getAuth(request);
@@ -19,10 +25,21 @@ export async function getTicketUpdatesController(
   next: NextFunction,
 ): Promise<void> {
   try {
+    const userId = getAuthenticatedUserId(request);
+
+    if (!userId) {
+      response.status(401).json({
+        error: "Authentication required.",
+      });
+      return;
+    }
+
     const ticketId = Number(request.params.ticketId);
 
-    const updates =
-      await ticketUpdateService.getUpdatesByTicketId(ticketId);
+    const updates = await getUserScopedUpdatesByTicketId(
+      ticketId,
+      userId,
+    );
 
     response.status(200).json(updates);
   } catch (error) {
@@ -36,19 +53,16 @@ export async function getMyTicketUpdatesController(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const clerkUserId = getAuthenticatedUserId(request);
+    const userId = getAuthenticatedUserId(request);
 
-    if (!clerkUserId) {
+    if (!userId) {
       response.status(401).json({
         error: "Authentication required.",
       });
       return;
     }
 
-    const updates =
-      await ticketUpdateService.getUpdatesByClerkUserId(
-        clerkUserId,
-      );
+    const updates = await getUpdatesByClerkUserId(userId);
 
     response.status(200).json(updates);
   } catch (error) {
@@ -62,20 +76,19 @@ export async function createTicketUpdateController(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const clerkUserId = getAuthenticatedUserId(request);
+    const userId = getAuthenticatedUserId(request);
 
-    if (!clerkUserId) {
+    if (!userId) {
       response.status(401).json({
         error: "Authentication required.",
       });
       return;
     }
 
-    const createdUpdate =
-      await ticketUpdateService.createTicketUpdate(
-        request.body,
-        clerkUserId,
-      );
+    const createdUpdate = await createTicketUpdate(
+      request.body,
+      userId,
+    );
 
     response.status(201).json(createdUpdate);
   } catch (error) {
@@ -89,9 +102,9 @@ export async function updateTicketUpdateController(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const clerkUserId = getAuthenticatedUserId(request);
+    const userId = getAuthenticatedUserId(request);
 
-    if (!clerkUserId) {
+    if (!userId) {
       response.status(401).json({
         error: "Authentication required.",
       });
@@ -100,12 +113,11 @@ export async function updateTicketUpdateController(
 
     const updateId = Number(request.params.updateId);
 
-    const updatedRecord =
-      await ticketUpdateService.updateTicketUpdate(
-        updateId,
-        request.body,
-        clerkUserId,
-      );
+    const updatedRecord = await updateTicketUpdate(
+      updateId,
+      request.body,
+      userId,
+    );
 
     if (!updatedRecord) {
       response.status(404).json({
@@ -127,9 +139,9 @@ export async function deleteTicketUpdateController(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const clerkUserId = getAuthenticatedUserId(request);
+    const userId = getAuthenticatedUserId(request);
 
-    if (!clerkUserId) {
+    if (!userId) {
       response.status(401).json({
         error: "Authentication required.",
       });
@@ -138,13 +150,12 @@ export async function deleteTicketUpdateController(
 
     const updateId = Number(request.params.updateId);
 
-    const wasDeleted =
-      await ticketUpdateService.deleteTicketUpdate(
-        updateId,
-        clerkUserId,
-      );
+    const deletedRecord = await deleteTicketUpdate(
+      updateId,
+      userId,
+    );
 
-    if (!wasDeleted) {
+    if (!deletedRecord) {
       response.status(404).json({
         error:
           "Ticket update was not found or does not belong to this user.",

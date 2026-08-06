@@ -15,102 +15,97 @@ const ticketUpdateSelect = {
   updatedAt: true,
 } as const;
 
-export const ticketUpdateService = {
-  getUpdatesByTicketId(ticketId: number) {
-    return prisma.ticketUpdate.findMany({
-      where: {
-        ticketId,
-      },
-      select: ticketUpdateSelect,
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-  },
+/**
+ * Returns every update for a ticket that belongs to the
+ * currently authenticated Clerk user.
+ */
+export async function getUserScopedUpdatesByTicketId(
+  ticketId: number,
+  clerkUserId: string,
+) {
+  return prisma.ticketUpdate.findMany({
+    where: {
+      ticketId,
+      clerkUserId,
+    },
+    select: ticketUpdateSelect,
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}
 
-  getUpdatesByClerkUserId(clerkUserId: string) {
-    return prisma.ticketUpdate.findMany({
-      where: {
-        clerkUserId,
-      },
-      select: ticketUpdateSelect,
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-  },
+/**
+ * Returns every ticket update created by the authenticated user.
+ */
+export async function getUpdatesByClerkUserId(
+  clerkUserId: string,
+) {
+  return prisma.ticketUpdate.findMany({
+    where: {
+      clerkUserId,
+    },
+    select: ticketUpdateSelect,
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}
 
-  getTicketUpdateById(updateId: number) {
-    return prisma.ticketUpdate.findUnique({
-      where: {
-        id: updateId,
-      },
-      select: ticketUpdateSelect,
-    });
-  },
+/**
+ * Finds one ticket update by its database ID.
+ */
+export async function getTicketUpdateById(
+  updateId: number,
+) {
+  return prisma.ticketUpdate.findUnique({
+    where: {
+      id: updateId,
+    },
+    select: ticketUpdateSelect,
+  });
+}
 
-  async createTicketUpdate(
-    input: CreateTicketUpdateInput,
-    clerkUserId: string,
-  ) {
-    // Ensure the authenticated Clerk user exists in the application database.
-    await prisma.appUser.upsert({
-      where: {
-        clerkUserId,
-      },
-      update: {},
-      create: {
-        clerkUserId,
-      },
-    });
+/**
+ * Creates an AppUser when necessary and associates the new
+ * ticket update with the authenticated Clerk user.
+ */
+export async function createTicketUpdate(
+  input: CreateTicketUpdateInput,
+  clerkUserId: string,
+) {
+  await prisma.appUser.upsert({
+    where: {
+      clerkUserId,
+    },
+    update: {},
+    create: {
+      clerkUserId,
+    },
+  });
 
-    // Create the update and associate it with the authenticated user.
-    return prisma.ticketUpdate.create({
-      data: {
-        ticketId: input.ticketId,
-        message: input.message,
-        createdBy: input.createdBy,
-        clerkUserId,
-      },
-      select: ticketUpdateSelect,
-    });
-  },
+  return prisma.ticketUpdate.create({
+    data: {
+      ticketId: input.ticketId,
+      message: input.message,
+      createdBy: input.createdBy,
+      clerkUserId,
+    },
+    select: ticketUpdateSelect,
+  });
+}
 
-  async updateTicketUpdate(
-    updateId: number,
-    input: UpdateTicketUpdateInput,
-    clerkUserId: string,
-  ) {
-    const existingUpdate = await prisma.ticketUpdate.findFirst({
-      where: {
-        id: updateId,
-        clerkUserId,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    if (!existingUpdate) {
-      return null;
-    }
-
-    return prisma.ticketUpdate.update({
-      where: {
-        id: updateId,
-      },
-      data: {
-        message: input.message,
-      },
-      select: ticketUpdateSelect,
-    });
-  },
-
-  async deleteTicketUpdate(
-    updateId: number,
-    clerkUserId: string,
-  ) {
-    const existingUpdate = await prisma.ticketUpdate.findFirst({
+/**
+ * Updates a ticket update only when it belongs to the
+ * authenticated Clerk user.
+ */
+export async function updateTicketUpdate(
+  updateId: number,
+  input: UpdateTicketUpdateInput,
+  clerkUserId: string,
+) {
+  const existingUpdate =
+    await prisma.ticketUpdate.findFirst({
       where: {
         id: updateId,
         clerkUserId,
@@ -120,16 +115,49 @@ export const ticketUpdateService = {
       },
     });
 
-    if (!existingUpdate) {
-      return false;
-    }
+  if (!existingUpdate) {
+    return null;
+  }
 
-    await prisma.ticketUpdate.delete({
+  return prisma.ticketUpdate.update({
+    where: {
+      id: updateId,
+    },
+    data: {
+      message: input.message,
+    },
+    select: ticketUpdateSelect,
+  });
+}
+
+/**
+ * Deletes a ticket update only when it belongs to the
+ * authenticated Clerk user.
+ */
+export async function deleteTicketUpdate(
+  updateId: number,
+  clerkUserId: string,
+) {
+  const existingUpdate =
+    await prisma.ticketUpdate.findFirst({
       where: {
         id: updateId,
+        clerkUserId,
+      },
+      select: {
+        id: true,
       },
     });
 
-    return true;
-  },
-};
+  if (!existingUpdate) {
+    return false;
+  }
+
+  await prisma.ticketUpdate.delete({
+    where: {
+      id: updateId,
+    },
+  });
+
+  return true;
+}

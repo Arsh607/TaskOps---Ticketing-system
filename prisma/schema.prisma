@@ -33,12 +33,12 @@ model TicketUpdate {
 }
 
 model AppUser {
-  id          Int      @id @default(autoincrement())
-  clerkUserId String   @unique
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  updates TicketUpdate[]
+  id          Int            @id @default(autoincrement())
+  clerkUserId String         @unique
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  updates     TicketUpdate[]
+  kanbanTasks KanbanTask[]
 }
 
 enum KanbanPriority {
@@ -59,9 +59,12 @@ model KanbanTask {
   title     String
   priority  KanbanPriority
   columnId  Int
+  appUserId Int?
   column    KanbanColumn   @relation(fields: [columnId], references: [id])
+  appUser   AppUser?       @relation(fields: [appUserId], references: [id], onDelete: SetNull)
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
   @@index([columnId])
+  @@index([appUserId])
 }
