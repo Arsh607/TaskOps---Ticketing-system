@@ -22,6 +22,15 @@ export async function createTicketUpdate(
   input: CreateTicketUpdateInput,
   clerkUserId: string,
 ) {
+  const existingTicket = await prisma.ticket.findUnique({
+    where: { id: input.ticketId },
+    select: { id: true },
+  });
+
+  if (!existingTicket) {
+    return null;
+  }
+
   const appUser = await appUserService.upsertByClerkUserId(clerkUserId);
 
   return prisma.ticketUpdate.create({

@@ -5,7 +5,7 @@ export type CurrentAppUser = {
   updatedAt: string;
 };
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
 
 export async function syncCurrentUser(sessionToken: string): Promise<CurrentAppUser> {
   const response = await fetch(`${API_URL}/api/users/me`, {

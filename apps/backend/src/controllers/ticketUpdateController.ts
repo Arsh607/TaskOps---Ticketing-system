@@ -37,6 +37,11 @@ export async function createTicketUpdateController(
 
     const createdUpdate = await createTicketUpdate(request.body, userId);
 
+    if (!createdUpdate) {
+      response.status(404).json({ error: "Ticket not found." });
+      return;
+    }
+
     response.status(201).json(createdUpdate);
   } catch (error) {
     next(error);

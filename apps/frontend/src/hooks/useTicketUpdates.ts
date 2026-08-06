@@ -1,3 +1,4 @@
+import { useAuth } from "@clerk/react";
 import { useCallback, useEffect, useState } from "react";
 import type { TicketUpdate } from "../repositories/ticketUpdateRepository";
 import {
@@ -7,18 +8,29 @@ import {
   validateUpdateMessage,
 } from "../services/ticketUpdateService";
 
-export function useTicketUpdates(ticketId: number) {
+export function useTicketUpdates(ticketId: number | null) {
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const [updates, setUpdates] = useState<TicketUpdate[]>([]);
   const [newUpdate, setNewUpdate] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   const refreshUpdates = useCallback(async () => {
+    if (!isLoaded || !isSignedIn) {
+      return;
+    }
+
+    if (ticketId === null) {
+      setUpdates([]);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
       setErrorMessage("");
 
-      const loadedUpdates = await getSortedUpdatesForTicket(ticketId);
+      const loadedUpdates = await getSortedUpdatesForTicket(ticketId, getToken);
       setUpdates(loadedUpdates);
     } catch (error) {
       setErrorMessage(
@@ -29,16 +41,22 @@ export function useTicketUpdates(ticketId: number) {
     } finally {
       setIsLoading(false);
     }
-  }, [ticketId]);
+  }, [getToken, isLoaded, isSignedIn, ticketId]);
 
   useEffect(() => {
-    void refreshUpdates();
+    const timeoutId = window.setTimeout(() => {
+      void refreshUpdates();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [refreshUpdates]);
 
-  async function handleAddUpdate(
-    createdBy: string,
-    sessionToken?: string,
-  ) {
+  async function handleAddUpdate(createdBy: string) {
+    if (ticketId === null) {
+      setErrorMessage("Create a ticket first before adding updates.");
+      return;
+    }
+
     const validationError = validateUpdateMessage(newUpdate);
 
     if (validationError) {
@@ -49,12 +67,7 @@ export function useTicketUpdates(ticketId: number) {
     try {
       setErrorMessage("");
 
-      await addTicketUpdate(
-        ticketId,
-        newUpdate,
-        createdBy,
-        sessionToken,
-      );
+      await addTicketUpdate(ticketId, newUpdate, createdBy, getToken);
 
       setNewUpdate("");
       await refreshUpdates();
@@ -71,7 +84,7 @@ export function useTicketUpdates(ticketId: number) {
     try {
       setErrorMessage("");
 
-      await removeTicketUpdate(updateId);
+      await removeTicketUpdate(updateId, getToken);
       await refreshUpdates();
     } catch (error) {
       setErrorMessage(

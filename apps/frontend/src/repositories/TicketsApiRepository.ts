@@ -1,4 +1,8 @@
 import type { Ticket } from '../types/Ticket'
+import {
+  authenticatedFetch,
+  type GetToken,
+} from '../lib/authenticatedFetch'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000'
 
@@ -7,16 +11,16 @@ function buildUrl(path: string) {
 }
 
 export const TicketsApiRepository = {
-  async getAll(): Promise<Ticket[]> {
-    const response = await fetch(buildUrl('/tickets'))
+  async getAll(getToken: GetToken): Promise<Ticket[]> {
+    const response = await authenticatedFetch(buildUrl('/tickets'), getToken)
     if (!response.ok) {
       throw new Error('Failed to load tickets')
     }
     return response.json()
   },
 
-  async getById(id: number): Promise<Ticket | undefined> {
-    const response = await fetch(buildUrl(`/tickets/${id}`))
+  async getById(id: number, getToken: GetToken): Promise<Ticket | undefined> {
+    const response = await authenticatedFetch(buildUrl(`/tickets/${id}`), getToken)
     if (response.status === 404) {
       return undefined
     }
@@ -26,8 +30,8 @@ export const TicketsApiRepository = {
     return response.json()
   },
 
-  async create(ticket: Omit<Ticket, 'id'>): Promise<Ticket> {
-    const response = await fetch(buildUrl('/tickets'), {
+  async create(ticket: Omit<Ticket, 'id'>, getToken: GetToken): Promise<Ticket> {
+    const response = await authenticatedFetch(buildUrl('/tickets'), getToken, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(ticket),
@@ -38,8 +42,12 @@ export const TicketsApiRepository = {
     return response.json()
   },
 
-  async update(id: number, updates: Partial<Ticket>): Promise<Ticket | undefined> {
-    const response = await fetch(buildUrl(`/tickets/${id}`), {
+  async update(
+    id: number,
+    updates: Partial<Ticket>,
+    getToken: GetToken,
+  ): Promise<Ticket | undefined> {
+    const response = await authenticatedFetch(buildUrl(`/tickets/${id}`), getToken, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates),
@@ -53,8 +61,8 @@ export const TicketsApiRepository = {
     return response.json()
   },
 
-  async delete(id: number): Promise<boolean> {
-    const response = await fetch(buildUrl(`/tickets/${id}`), {
+  async delete(id: number, getToken: GetToken): Promise<boolean> {
+    const response = await authenticatedFetch(buildUrl(`/tickets/${id}`), getToken, {
       method: 'DELETE',
     })
     if (response.status === 404) {

@@ -6,6 +6,7 @@ import {
   type CreateTicketUpdateInput,
   type TicketUpdate,
 } from "../repositories/ticketUpdateRepository";
+import type { GetToken } from "../lib/authenticatedFetch";
 
 export function validateUpdateMessage(message: string): string | null {
   const trimmedMessage = message.trim();
@@ -27,8 +28,9 @@ export function validateUpdateMessage(message: string): string | null {
 
 export async function getSortedUpdatesForTicket(
   ticketId: number,
+  getToken: GetToken,
 ): Promise<TicketUpdate[]> {
-  const updates = await getTicketUpdatesFromRepository(ticketId);
+  const updates = await getTicketUpdatesFromRepository(ticketId, getToken);
 
   return [...updates].sort(
     (firstUpdate, secondUpdate) =>
@@ -41,7 +43,7 @@ export async function addTicketUpdate(
   ticketId: number,
   message: string,
   createdBy: string,
-  sessionToken?: string,
+  getToken: GetToken,
 ): Promise<TicketUpdate> {
   const error = validateUpdateMessage(message);
 
@@ -55,12 +57,13 @@ export async function addTicketUpdate(
     createdBy: createdBy.trim(),
   };
 
-  return createTicketUpdateInRepository(input, sessionToken);
+  return createTicketUpdateInRepository(input, getToken);
 }
 
 export async function editTicketUpdate(
   updateId: number,
   message: string,
+  getToken: GetToken,
 ): Promise<TicketUpdate> {
   const error = validateUpdateMessage(message);
 
@@ -68,9 +71,12 @@ export async function editTicketUpdate(
     throw new Error(error);
   }
 
-  return updateTicketUpdateInRepository(updateId, message.trim());
+  return updateTicketUpdateInRepository(updateId, message.trim(), getToken);
 }
 
-export async function removeTicketUpdate(updateId: number): Promise<void> {
-  await deleteTicketUpdateInRepository(updateId);
+export async function removeTicketUpdate(
+  updateId: number,
+  getToken: GetToken,
+): Promise<void> {
+  await deleteTicketUpdateInRepository(updateId, getToken);
 }
