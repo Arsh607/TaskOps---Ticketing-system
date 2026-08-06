@@ -1,177 +1,263 @@
-# TaskOps
+# TaskOps - Ticket Management System
 
-## Team Information
+## Overview
 
-### Team Name
-TaskOps Developers
+TaskOps is a full-stack ticket management application developed as part of the Full-Stack Development course. The application allows users to manage support tickets through an interactive dashboard, Kanban board, and ticket management system.
 
-### Team Members
-- Arshdeep Singh
-- Muse Muse
+The project follows a layered architecture consisting of a React frontend, an Express backend, Prisma ORM, and a PostgreSQL database running inside Docker.
+
+---
+
+## Team Members
+- Arshdeep Rishi
+- Muse Muse 
 - Krupa Patel
 
----
+## Technologies Used
 
-# Project Description
-
-TaskOps is a modern ticket management and workflow organization platform designed to help teams manage support requests, assignments, and project-related tasks efficiently.
-
-The application provides users with a centralized dashboard for viewing notifications and general updates, a ticket management system for tracking assigned work, detailed ticket pages for managing issue information, and an integrated Kanban board for organizing tasks visually.
-
-The project focuses on improving collaboration, task visibility, and workflow management for technical and support teams.
-
----
-
-# Core Features
-
-- User authentication and login system
-- User dashboard with notifications and personalized information
-- Ticket management system
-- Detailed ticket pages
-- Built-in Kanban task board
-- Task organization and assignment
-- Team-based workflow support
-
----
-
-# High-Level User Stories
-
-- As a user, I want to view all tickets assigned to me so that I can track my current workload efficiently.
-
-- As a user, I want to open a ticket and view its full details so that I can understand the issue and update its progress.
-
-- As a user, I want to organize tasks using a Kanban board so that I can manage work visually and improve productivity.
-
-- As a user, I want to receive notifications and updates on my dashboard so that I can stay informed about important activity.
-
-- As a team member, I want to manage and update tickets collaboratively so that support and development workflows remain organized.
-
----
-
-# Planned Pages
-
-## Login Page
-Displays:
-- user login form
-- authentication validation
-- secure access to the application
-
-## Dashboard
-Displays:
-- notifications
-- recent activity
-- assigned ticket summary
-- general user information
-
-## Tickets Page
-Displays:
-- all assigned tickets
-- ticket status
-- priority information
-- filtering and searching options
-
-## Ticket Details Page
-Displays:
-- ticket title and description
-- comments and updates
-- assignment information
-- status and progress tracking
-
-## Kanban Board
-Displays:
-- draggable task columns
-- task organization by workflow stage
-- task progress visualization
-
----
-
-# Technology Stack
-
-## Frontend
+### Frontend
 - React
 - TypeScript
 - Vite
+- React Router
 
-## Backend
+### Backend
 - Node.js
 - Express
 - TypeScript
 
-## Repository Structure
-- `apps/frontend`: React/Vite frontend workspace
-- `apps/backend`: Node.js/Express backend workspace
+### Database
+- PostgreSQL
+- Prisma ORM
+- Docker
 
-## Local Development
-- `npm run dev:frontend`: starts the frontend app
-- `npm run dev:backend`: starts the backend API
-- `npm run build`: builds all npm workspaces
-- `npm run lint`: lints the full monorepo
+### Authentication
+- Clerk Authentication
 
-## Version Control
+---
+
+## Project Structure
+
+```
+TaskOps/
+│
+├── apps/
+│   ├── frontend/
+│   └── backend/
+│
+├── prisma/
+│
+├── docker-compose.yml
+├── package.json
+└── README.md
+```
+
+---
+
+# Local Setup
+
+## Prerequisites
+
+Before running the project, install:
+
+- Node.js (v20 or newer)
+- npm
+- Docker Desktop
 - Git
-- GitHub
-
-## Deployment
-- Vercel
 
 ---
 
-# Development Workflow
+## Clone the Repository
 
-- `main` branch is used for production-ready code
-- `develop` branch is used for active development
-- Feature branches are created for individual tasks and merged through pull requests
-
----
-
----
-
-# Sprint 1
-
-- Github project, Vercel and Kanban setup: Muse and Arshdeep
-- `STYLEGUIDE.md`: Muse
-- `README.md`: Arshdeep
-- kanban-board component: Muse
-- ticket-details component: Arshdeep
-- ticket-list component: Krupa
-- App.tsx integration: Krupa
+```bash
+git clone <repository-url>
+cd TaskOps
+```
 
 ---
 
----
+## Install Dependencies
 
-# Sprint 2
+Install all workspace dependencies from the project root.
 
-- Multi-page Navigation: Krupa
-- Naivgation Interfaces: Kurpa and Arshdeep
-- Shared state across pages: Muse
-- kanban-board feature page and form component: Muse
-- ticket-list feature page and form component: Krupa
-- ticket-details feature page and form component: Arshdeep
+```bash
+npm install
+```
 
 ---
----
 
-# Sprint 3
+## Environment Variables
 
-- T.1: Hook Definition(s): Krupa
-- T.2: Service Definition(s): Arshdeep
-- T.4: Shared-page-state Refactor: Muse
-- kanban-task resource, test-data and hooks, services, and repository architecture: Muse
-- service, types and repository and custom hooks for ticket-form resource: Krupa
-- Refactored the Ticket Details feature to follow the Hook–Service–Repository: Arshdeep
+### Backend (.env)
 
----
----
+Create a `.env` file in the project root containing:
 
-# Sprint 4
-
-- T.1: Back-end App Initialization: Muse
-- T.2: Development SQL Database: Krupa
-- T.3: Prisma Installation and Client Initialization: Krupa
-- T.4: Back-end CORS Configuration: Arshdeep
-- kanban-board backend integration: Muse
-- Ticket backend integration: Krupa
-- Ticket update backend integration: Arshdeep
+```env
+DATABASE_URL=postgresql://postgres:password@localhost:5433/taskops_dev
+```
 
 ---
+
+### Frontend (.env)
+
+Create a `.env` file inside:
+
+```
+apps/frontend/
+```
+
+Add the following variables:
+
+```env
+VITE_API_BASE_URL=http://localhost:3000
+VITE_API_URL=http://localhost:3000
+VITE_CLERK_PUBLISHABLE_KEY=<your-clerk-publishable-key>
+```
+
+---
+
+## Database Setup
+
+The project uses PostgreSQL running inside Docker.
+
+Start the database:
+
+```bash
+docker compose up -d
+```
+
+Verify that the container is running:
+
+```bash
+docker ps
+```
+
+---
+
+## Prisma Setup
+
+After the database has started, apply all database migrations.
+
+```bash
+npx prisma migrate dev
+```
+
+Generate the Prisma Client.
+
+```bash
+npx prisma generate
+```
+
+---
+
+## Running the Backend
+
+From the project root:
+
+```bash
+npm run dev:backend
+```
+
+The backend runs on:
+
+```
+http://localhost:3000
+```
+
+---
+
+## Running the Frontend
+
+Open another terminal.
+
+From the project root:
+
+```bash
+npm run dev:frontend
+```
+
+The frontend runs on:
+
+```
+http://localhost:5173
+```
+
+---
+
+## Running the Complete Application
+
+Open three terminals.
+
+### Terminal 1
+
+```bash
+docker compose up -d
+```
+
+### Terminal 2
+
+```bash
+npm run dev:backend
+```
+
+### Terminal 3
+
+```bash
+npm run dev:frontend
+```
+
+Then open:
+
+```
+http://localhost:5173
+```
+
+---
+
+## Available Scripts
+
+### Root
+
+```bash
+npm install
+npm run build
+npm run dev:frontend
+npm run dev:backend
+```
+
+### Frontend
+
+```bash
+npm run dev
+npm run build
+npm run preview
+```
+
+### Backend
+
+```bash
+npm run dev
+npm run build
+npm run start
+```
+
+---
+
+## Features
+
+- Ticket Management
+- Ticket Details
+- Ticket Updates
+- Kanban Board
+- Shared View Counter
+- REST API
+- PostgreSQL Database
+- Prisma ORM
+- Clerk Authentication
+- CORS Configuration
+
+---
+
+## Team
+
+Developed as a collaborative Full-Stack Development course project.
