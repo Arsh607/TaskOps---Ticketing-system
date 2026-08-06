@@ -1,3 +1,4 @@
+import { useAuth } from '@clerk/react'
 import { useState } from 'react'
 import './TicketForm.css'
 import { useFormValidation } from '../../hooks'
@@ -15,6 +16,7 @@ interface TicketFormProps {
  * - Notifies parent via `onAddTicket` after repository confirms creation.
  */
 function TicketForm({ onAddTicket }: TicketFormProps) {
+  const { getToken } = useAuth()
   const [title, setTitle] = useState('')
   const [status, setStatus] = useState('Open')
   const [priority, setPriority] = useState('Medium')
@@ -42,12 +44,15 @@ function TicketForm({ onAddTicket }: TicketFormProps) {
     }
 
     // Create via service which calls repository (test data in-memory)
-    const created = await TicketsService.createTicket({
-      title: title.trim(),
-      status,
-      priority,
-      owner: owner.trim(),
-    })
+    const created = await TicketsService.createTicket(
+      {
+        title: title.trim(),
+        status,
+        priority,
+        owner: owner.trim(),
+      },
+      getToken,
+    )
 
     onAddTicket(created)
 

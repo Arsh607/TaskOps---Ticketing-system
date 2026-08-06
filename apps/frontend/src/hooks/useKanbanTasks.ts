@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
+import { useAuth } from '@clerk/react'
 import {
   addKanbanTask,
   getDefaultDraftKanbanTask,
@@ -40,6 +41,7 @@ function getErrorMessage(error: unknown): string {
 }
 
 export function useKanbanTasks(): UseKanbanTasksResult {
+  const { getToken, isLoaded, isSignedIn } = useAuth()
   const [kanbanColumns, setKanbanColumns] = useState<KanbanColumn[]>([])
   const [tasks, setTasks] = useState<KanbanTask[]>([])
   const [draftTask, setDraftTask] = useState<DraftKanbanTask>(
@@ -55,11 +57,15 @@ export function useKanbanTasks(): UseKanbanTasksResult {
   )
 
   useEffect(() => {
+    if (!isLoaded || !isSignedIn) {
+      return
+    }
+
     let ignoreResult = false
 
     async function loadTasks(): Promise<void> {
       try {
-        const board = await loadKanbanBoard()
+        const board = await loadKanbanBoard(getToken)
 
         if (!ignoreResult) {
           setKanbanColumns(board.columns)
@@ -82,7 +88,7 @@ export function useKanbanTasks(): UseKanbanTasksResult {
     return () => {
       ignoreResult = true
     }
-  }, [])
+  }, [getToken, isLoaded, isSignedIn])
 
   async function addTask(): Promise<void> {
     const validationMessage = validateDraftKanbanTask(draftTask)
@@ -94,7 +100,7 @@ export function useKanbanTasks(): UseKanbanTasksResult {
 
     setIsSaving(true)
     try {
-      const task = await addKanbanTask(draftTask)
+      const task = await addKanbanTask(draftTask, getToken)
       setTasks((currentTasks) => [...currentTasks, task])
       setValidationError('')
       setRequestError('')
@@ -115,7 +121,7 @@ export function useKanbanTasks(): UseKanbanTasksResult {
   ): Promise<void> {
     setIsSaving(true)
     try {
-      const updatedTask = await moveKanbanTask(taskId, columnId)
+      const updatedTask = await moveKanbanTask(taskId, columnId, getToken)
       setTasks((currentTasks) =>
         currentTasks.map((task) =>
           task.id === updatedTask.id ? updatedTask : task,
@@ -132,7 +138,7 @@ export function useKanbanTasks(): UseKanbanTasksResult {
   async function removeTask(taskId: KanbanTask['id']): Promise<void> {
     setIsSaving(true)
     try {
-      await removeKanbanTask(taskId)
+      await removeKanbanTask(taskId, getToken)
       setTasks((currentTasks) =>
         currentTasks.filter((task) => task.id !== taskId),
       )
