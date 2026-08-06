@@ -8,6 +8,7 @@ export interface TicketUpdate {
   ticketId: number;
   message: string;
   createdBy: string;
+  appUserId?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -19,7 +20,7 @@ export interface CreateTicketUpdateInput {
 }
 
 const API_URL =
-  import.meta.env.VITE_API_URL ?? "http://localhost:3000";
+  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000";
 
 async function parseResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {

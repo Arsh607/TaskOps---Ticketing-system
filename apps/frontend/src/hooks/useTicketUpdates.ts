@@ -8,7 +8,7 @@ import {
   validateUpdateMessage,
 } from "../services/ticketUpdateService";
 
-export function useTicketUpdates(ticketId: number) {
+export function useTicketUpdates(ticketId: number | null) {
   const { getToken, isLoaded, isSignedIn } = useAuth();
   const [updates, setUpdates] = useState<TicketUpdate[]>([]);
   const [newUpdate, setNewUpdate] = useState("");
@@ -17,6 +17,12 @@ export function useTicketUpdates(ticketId: number) {
 
   const refreshUpdates = useCallback(async () => {
     if (!isLoaded || !isSignedIn) {
+      return;
+    }
+
+    if (ticketId === null) {
+      setUpdates([]);
+      setIsLoading(false);
       return;
     }
 
@@ -46,6 +52,11 @@ export function useTicketUpdates(ticketId: number) {
   }, [refreshUpdates]);
 
   async function handleAddUpdate(createdBy: string) {
+    if (ticketId === null) {
+      setErrorMessage("Create a ticket first before adding updates.");
+      return;
+    }
+
     const validationError = validateUpdateMessage(newUpdate);
 
     if (validationError) {

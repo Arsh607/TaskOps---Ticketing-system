@@ -9,7 +9,8 @@ import {
   type GetToken,
 } from '../lib/authenticatedFetch'
 
-const apiBaseUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api'
+const apiRootUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000'
+const apiBaseUrl = `${apiRootUrl}/api`
 
 async function requestJson<T>(
   path: string,

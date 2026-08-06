@@ -7,6 +7,7 @@ import { clerkConfig } from './config/env.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { requireAuthentication } from './middleware/requireAuthentication.js';
 import ticketUpdateRouter from './routes/ticketUpdateRoutes.js';
+import userRouter from './routes/userRoutes.js';
 import {
   kanbanColumnRouter,
   kanbanTaskRouter,
@@ -25,6 +26,7 @@ app.get('/health', (_request: Request, response: Response) => {
 app.use('/tickets', requireAuthentication, ticketsRouter);
 app.use('/api', requireAuthentication);
 app.use('/api', ticketUpdateRouter);
+app.use('/api/users', userRouter);
 app.use('/api/kanban-columns', kanbanColumnRouter);
 app.use('/api/kanban-tasks', kanbanTaskRouter);
 app.use(errorHandler);
