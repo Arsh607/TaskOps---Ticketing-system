@@ -261,3 +261,63 @@ npm run start
 ## Team
 
 Developed as a collaborative Full-Stack Development course project.
+
+# Sprint 1
+
+- Github project, Vercel and Kanban setup: Muse and Arshdeep
+- `STYLEGUIDE.md`: Muse
+- `README.md`: Arshdeep
+- kanban-board component: Muse
+- ticket-details component: Arshdeep
+- ticket-list component: Krupa
+- App.tsx integration: Krupa
+
+---
+
+---
+
+# Sprint 2
+
+- Multi-page Navigation: Krupa
+- Naivgation Interfaces: Kurpa and Arshdeep
+- Shared state across pages: Muse
+- kanban-board feature page and form component: Muse
+- ticket-list feature page and form component: Krupa
+- ticket-details feature page and form component: Arshdeep
+
+---
+---
+
+# Sprint 3
+
+- T.1: Hook Definition(s): Krupa
+- T.2: Service Definition(s): Arshdeep
+- T.4: Shared-page-state Refactor: Muse
+- kanban-task resource, test-data and hooks, services, and repository architecture: Muse
+- service, types and repository and custom hooks for ticket-form resource: Krupa
+- Refactored the Ticket Details feature to follow the Hook–Service–Repository: Arshdeep
+
+---
+---
+
+# Sprint 4
+
+- T.1: Back-end App Initialization: Muse
+- T.2: Development SQL Database: Krupa
+- T.3: Prisma Installation and Client Initialization: Krupa
+- T.4: Back-end CORS Configuration: Arshdeep
+- kanban-board backend integration: Muse
+- Ticket backend integration: Krupa
+- Ticket update backend integration: Arshdeep
+
+---
+---
+
+# Sprint 5
+
+- T.1: Clerk Auth Setup: Muse
+- T.2: Back-end User Management: Krupa 
+- T.3: User Login/Registration: Muse
+- T.4: Local Setup Instructions: Arshdeep
+
+---
