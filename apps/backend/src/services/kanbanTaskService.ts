@@ -3,6 +3,7 @@ import type {
   CreateKanbanTaskInput,
   UpdateKanbanTaskInput,
 } from '../schemas/kanbanTaskSchemas.js';
+import { appUserService } from './appUserService.js';
 
 const kanbanTaskSelect = {
   id: true,
@@ -25,23 +26,38 @@ export const kanbanTaskService = {
     });
   },
 
-  listTasks() {
+  listTasks(clerkUserId: string) {
     return prisma.kanbanTask.findMany({
+      where: {
+        appUser: { clerkUserId },
+      },
       select: kanbanTaskSelect,
       orderBy: { id: 'asc' },
     });
   },
 
-  createTask(task: CreateKanbanTaskInput) {
+  async createTask(task: CreateKanbanTaskInput, clerkUserId: string) {
+    const appUser = await appUserService.upsertByClerkUserId(clerkUserId);
+
     return prisma.kanbanTask.create({
-      data: task,
+      data: {
+        ...task,
+        appUserId: appUser.id,
+      },
       select: kanbanTaskSelect,
     });
   },
 
-  async updateTask(taskId: number, updates: UpdateKanbanTaskInput) {
-    const existingTask = await prisma.kanbanTask.findUnique({
-      where: { id: taskId },
+  async updateTask(
+    taskId: number,
+    updates: UpdateKanbanTaskInput,
+    clerkUserId: string,
+  ) {
+    const existingTask = await prisma.kanbanTask.findFirst({
+      where: {
+        id: taskId,
+        appUser: { clerkUserId },
+      },
       select: { id: true },
     });
 
@@ -56,9 +72,12 @@ export const kanbanTaskService = {
     });
   },
 
-  async deleteTask(taskId: number) {
+  async deleteTask(taskId: number, clerkUserId: string) {
     const result = await prisma.kanbanTask.deleteMany({
-      where: { id: taskId },
+      where: {
+        id: taskId,
+        appUser: { clerkUserId },
+      },
     });
 
     return result.count > 0;
