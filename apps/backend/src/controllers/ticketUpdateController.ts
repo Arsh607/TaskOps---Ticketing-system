@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import { getAuth } from "@clerk/express";
 import {
   createTicketUpdate,
   deleteTicketUpdate,
@@ -27,7 +28,14 @@ export async function createTicketUpdateController(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const createdUpdate = await createTicketUpdate(request.body);
+    const { userId } = getAuth(request);
+
+    if (!userId) {
+      response.status(401).json({ error: "Unauthorized." });
+      return;
+    }
+
+    const createdUpdate = await createTicketUpdate(request.body, userId);
 
     response.status(201).json(createdUpdate);
   } catch (error) {

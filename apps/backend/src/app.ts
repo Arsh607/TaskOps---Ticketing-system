@@ -1,9 +1,11 @@
 import cors from 'cors';
 import express, { type Request, type Response } from 'express';
+import { clerkMiddleware } from '@clerk/express';
 import ticketsRouter from './api/tickets.js';
 import { corsOptions } from './config/cors.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import ticketUpdateRouter from './routes/ticketUpdateRoutes.js';
+import userRouter from './routes/userRoutes.js';
 import {
   kanbanColumnRouter,
   kanbanTaskRouter,
@@ -13,6 +15,7 @@ export const app = express();
 
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(clerkMiddleware());
 
 app.get('/health', (_request: Request, response: Response) => {
   response.status(200).json({ status: 'ok', service: 'taskops-api' });
@@ -20,6 +23,7 @@ app.get('/health', (_request: Request, response: Response) => {
 
 app.use('/tickets', ticketsRouter);
 app.use('/api', ticketUpdateRouter);
+app.use('/api/users', userRouter);
 app.use('/api/kanban-columns', kanbanColumnRouter);
 app.use('/api/kanban-tasks', kanbanTaskRouter);
 app.use(errorHandler);

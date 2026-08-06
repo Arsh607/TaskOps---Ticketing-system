@@ -35,7 +35,10 @@ export function useTicketUpdates(ticketId: number) {
     void refreshUpdates();
   }, [refreshUpdates]);
 
-  async function handleAddUpdate(createdBy: string) {
+  async function handleAddUpdate(
+    createdBy: string,
+    sessionToken?: string,
+  ) {
     const validationError = validateUpdateMessage(newUpdate);
 
     if (validationError) {
@@ -46,7 +49,12 @@ export function useTicketUpdates(ticketId: number) {
     try {
       setErrorMessage("");
 
-      await addTicketUpdate(ticketId, newUpdate, createdBy);
+      await addTicketUpdate(
+        ticketId,
+        newUpdate,
+        createdBy,
+        sessionToken,
+      );
 
       setNewUpdate("");
       await refreshUpdates();

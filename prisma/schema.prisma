@@ -21,12 +21,23 @@ model TicketUpdate {
   ticketId  Int
   message   String
   createdBy String
+  appUserId Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticket  Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  appUser AppUser? @relation(fields: [appUserId], references: [id], onDelete: SetNull)
 
   @@index([ticketId])
+  @@index([appUserId])
+}
+
+model AppUser {
+  id          Int            @id @default(autoincrement())
+  clerkUserId String         @unique
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  updates     TicketUpdate[]
 }
 
 enum KanbanPriority {

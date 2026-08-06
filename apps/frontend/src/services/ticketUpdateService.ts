@@ -41,6 +41,7 @@ export async function addTicketUpdate(
   ticketId: number,
   message: string,
   createdBy: string,
+  sessionToken?: string,
 ): Promise<TicketUpdate> {
   const error = validateUpdateMessage(message);
 
@@ -54,7 +55,7 @@ export async function addTicketUpdate(
     createdBy: createdBy.trim(),
   };
 
-  return createTicketUpdateInRepository(input);
+  return createTicketUpdateInRepository(input, sessionToken);
 }
 
 export async function editTicketUpdate(

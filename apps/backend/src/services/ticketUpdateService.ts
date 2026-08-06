@@ -1,4 +1,5 @@
 import { prisma } from "../lib/prisma.js";
+import { appUserService } from "./appUserService.js";
 import type {
   CreateTicketUpdateInput,
   UpdateTicketUpdateInput,
@@ -17,12 +18,18 @@ export async function getTicketUpdateById(updateId: number) {
   });
 }
 
-export async function createTicketUpdate(input: CreateTicketUpdateInput) {
+export async function createTicketUpdate(
+  input: CreateTicketUpdateInput,
+  clerkUserId: string,
+) {
+  const appUser = await appUserService.upsertByClerkUserId(clerkUserId);
+
   return prisma.ticketUpdate.create({
     data: {
       ticketId: input.ticketId,
       message: input.message,
       createdBy: input.createdBy,
+      appUserId: appUser.id,
     },
   });
 }

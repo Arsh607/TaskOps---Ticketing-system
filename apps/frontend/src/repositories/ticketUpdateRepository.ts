@@ -3,6 +3,7 @@ export interface TicketUpdate {
   ticketId: number;
   message: string;
   createdBy: string;
+  appUserId?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -45,11 +46,15 @@ export async function getTicketUpdates(
 
 export async function createTicketUpdate(
   input: CreateTicketUpdateInput,
+  sessionToken?: string,
 ): Promise<TicketUpdate> {
   const response = await fetch(`${API_URL}/api/ticket-updates`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      ...(sessionToken
+        ? { Authorization: `Bearer ${sessionToken}` }
+        : {}),
     },
     body: JSON.stringify(input),
   });
