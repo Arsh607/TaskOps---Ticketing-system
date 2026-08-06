@@ -1,14 +1,18 @@
+import type { GetToken } from "../lib/authenticatedFetch";
+
 import {
   createTicketUpdate as createTicketUpdateInRepository,
   deleteTicketUpdate as deleteTicketUpdateInRepository,
+  getMyTicketUpdates as getMyTicketUpdatesFromRepository,
   getTicketUpdates as getTicketUpdatesFromRepository,
   updateTicketUpdate as updateTicketUpdateInRepository,
   type CreateTicketUpdateInput,
   type TicketUpdate,
 } from "../repositories/ticketUpdateRepository";
-import type { GetToken } from "../lib/authenticatedFetch";
 
-export function validateUpdateMessage(message: string): string | null {
+export function validateUpdateMessage(
+  message: string,
+): string | null {
   const trimmedMessage = message.trim();
 
   if (trimmedMessage.length === 0) {
@@ -26,17 +30,36 @@ export function validateUpdateMessage(message: string): string | null {
   return null;
 }
 
-export async function getSortedUpdatesForTicket(
-  ticketId: number,
-  getToken: GetToken,
-): Promise<TicketUpdate[]> {
-  const updates = await getTicketUpdatesFromRepository(ticketId, getToken);
-
+function sortNewestFirst(
+  updates: TicketUpdate[],
+): TicketUpdate[] {
   return [...updates].sort(
     (firstUpdate, secondUpdate) =>
       new Date(secondUpdate.createdAt).getTime() -
       new Date(firstUpdate.createdAt).getTime(),
   );
+}
+
+export async function getSortedUpdatesForTicket(
+  ticketId: number,
+  getToken: GetToken,
+): Promise<TicketUpdate[]> {
+  const updates =
+    await getTicketUpdatesFromRepository(
+      ticketId,
+      getToken,
+    );
+
+  return sortNewestFirst(updates);
+}
+
+export async function getSortedUpdatesForCurrentUser(
+  getToken: GetToken,
+): Promise<TicketUpdate[]> {
+  const updates =
+    await getMyTicketUpdatesFromRepository(getToken);
+
+  return sortNewestFirst(updates);
 }
 
 export async function addTicketUpdate(
@@ -71,12 +94,19 @@ export async function editTicketUpdate(
     throw new Error(error);
   }
 
-  return updateTicketUpdateInRepository(updateId, message.trim(), getToken);
+  return updateTicketUpdateInRepository(
+    updateId,
+    message.trim(),
+    getToken,
+  );
 }
 
 export async function removeTicketUpdate(
   updateId: number,
   getToken: GetToken,
 ): Promise<void> {
-  await deleteTicketUpdateInRepository(updateId, getToken);
+  await deleteTicketUpdateInRepository(
+    updateId,
+    getToken,
+  );
 }

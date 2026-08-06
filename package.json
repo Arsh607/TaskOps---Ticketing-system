@@ -29,6 +29,7 @@
     "typescript-eslint": "^8.59.2"
   },
   "dependencies": {
+    "@clerk/react": "^6.13.0",
     "@prisma/adapter-pg": "^7.8.0",
     "pg": "^8.22.0",
     "zod": "^4.4.3"

@@ -1,11 +1,15 @@
 import { Router } from "express";
+
 import {
   createTicketUpdateController,
   deleteTicketUpdateController,
+  getMyTicketUpdatesController,
   getTicketUpdatesController,
   updateTicketUpdateController,
 } from "../controllers/ticketUpdateController.js";
+
 import { validateRequest } from "../middleware/validateRequest.js";
+
 import {
   createTicketUpdateBodySchema,
   ticketIdParamSchema,
@@ -21,6 +25,12 @@ ticketUpdateRouter.get(
     params: ticketIdParamSchema,
   }),
   getTicketUpdatesController,
+);
+
+// Returns only updates associated with the authenticated Clerk user.
+ticketUpdateRouter.get(
+  "/my-ticket-updates",
+  getMyTicketUpdatesController,
 );
 
 ticketUpdateRouter.post(
