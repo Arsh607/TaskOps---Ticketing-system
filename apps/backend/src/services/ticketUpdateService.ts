@@ -12,6 +12,25 @@ export async function getUpdatesByTicketId(ticketId: number) {
   });
 }
 
+export async function getUserScopedUpdatesByTicketId(
+  ticketId: number,
+  clerkUserId: string,
+) {
+  const appUser = await appUserService.findByClerkUserId(clerkUserId);
+
+  if (!appUser) {
+    return [];
+  }
+
+  return prisma.ticketUpdate.findMany({
+    where: {
+      ticketId,
+      appUserId: appUser.id,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 export async function getTicketUpdateById(updateId: number) {
   return prisma.ticketUpdate.findUnique({
     where: { id: updateId },
@@ -46,8 +65,21 @@ export async function createTicketUpdate(
 export async function updateTicketUpdate(
   updateId: number,
   input: UpdateTicketUpdateInput,
+  clerkUserId: string,
 ) {
-  const existingUpdate = await getTicketUpdateById(updateId);
+  const appUser = await appUserService.findByClerkUserId(clerkUserId);
+
+  if (!appUser) {
+    return null;
+  }
+
+  const existingUpdate = await prisma.ticketUpdate.findFirst({
+    where: {
+      id: updateId,
+      appUserId: appUser.id,
+    },
+    select: { id: true },
+  });
 
   if (!existingUpdate) {
     return null;
@@ -61,8 +93,23 @@ export async function updateTicketUpdate(
   });
 }
 
-export async function deleteTicketUpdate(updateId: number) {
-  const existingUpdate = await getTicketUpdateById(updateId);
+export async function deleteTicketUpdate(
+  updateId: number,
+  clerkUserId: string,
+) {
+  const appUser = await appUserService.findByClerkUserId(clerkUserId);
+
+  if (!appUser) {
+    return null;
+  }
+
+  const existingUpdate = await prisma.ticketUpdate.findFirst({
+    where: {
+      id: updateId,
+      appUserId: appUser.id,
+    },
+    select: { id: true },
+  });
 
   if (!existingUpdate) {
     return null;
