@@ -3,7 +3,7 @@ import { getAuth } from "@clerk/express";
 import {
   createTicketUpdate,
   deleteTicketUpdate,
-  getUpdatesByTicketId,
+  getUserScopedUpdatesByTicketId,
   updateTicketUpdate,
 } from "../services/ticketUpdateService.js";
 
@@ -13,8 +13,15 @@ export async function getTicketUpdatesController(
   next: NextFunction,
 ): Promise<void> {
   try {
+    const { userId } = getAuth(request);
+
+    if (!userId) {
+      response.status(401).json({ error: "Unauthorized." });
+      return;
+    }
+
     const ticketId = Number(request.params.ticketId);
-    const updates = await getUpdatesByTicketId(ticketId);
+    const updates = await getUserScopedUpdatesByTicketId(ticketId, userId);
 
     response.status(200).json(updates);
   } catch (error) {
@@ -54,11 +61,19 @@ export async function updateTicketUpdateController(
   next: NextFunction,
 ): Promise<void> {
   try {
+    const { userId } = getAuth(request);
+
+    if (!userId) {
+      response.status(401).json({ error: "Unauthorized." });
+      return;
+    }
+
     const updateId = Number(request.params.updateId);
 
     const updatedRecord = await updateTicketUpdate(
       updateId,
       request.body,
+      userId,
     );
 
     if (!updatedRecord) {
@@ -80,8 +95,15 @@ export async function deleteTicketUpdateController(
   next: NextFunction,
 ): Promise<void> {
   try {
+    const { userId } = getAuth(request);
+
+    if (!userId) {
+      response.status(401).json({ error: "Unauthorized." });
+      return;
+    }
+
     const updateId = Number(request.params.updateId);
-    const deletedRecord = await deleteTicketUpdate(updateId);
+    const deletedRecord = await deleteTicketUpdate(updateId, userId);
 
     if (!deletedRecord) {
       response.status(404).json({
